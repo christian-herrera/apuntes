@@ -22,6 +22,11 @@
             "label": "Publish",
             "type": "shell",
             "command": "npm run deploy"
+        },
+        {
+            "label": "Configure (Ubuntu)",
+            "type": "shell",
+            "command": "SSH_AUTH=true && GIT_USER=christian-herrera"
         }
     ]
 }

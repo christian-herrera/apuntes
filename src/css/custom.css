@@ -23,7 +23,6 @@
     --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
-
 /* ==> INDEX <== */
 .hero {
     color: white;
@@ -31,11 +30,11 @@
 
     background-image: linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.2)), url(/static/img/index/background.jpg);
     background-size: cover;
-    background-position: center 45%;
+    background-position: center 40%;
     /* background-attachment: fixed; */
 
     position: relative;
-    mask-image: linear-gradient(to bottom, black 65%, black 85%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 70%, rgba(0, 0, 0, 0.85) 80%, rgba(0, 0, 0, 0.5) 90%, rgba(0, 0, 0, 0.2) 95%, transparent 100%);
 }
 
 .footer {
@@ -43,21 +42,18 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.245);
 }
 
-
 .button {
-  background: none;
-  border: 2px solid #ffffff;
-  color: white;
-  width: 200px;
-  transition: all 0.5s ease;
+    background: none;
+    border: 2px solid #ffffff;
+    color: white;
+    width: 200px;
+    transition: all 0.5s ease;
 }
 
 .button:hover {
-  background: #ffffff;
-  color: black;
+    background: #ffffff;
+    color: black;
 }
-
-
 
 /* ==> PAGINAS INTERNAS <== */
 @import "pages.css";
