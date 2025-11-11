@@ -1,0 +1,24 @@
+{
+	"Estructura básica de una nueva categoría": {
+		"scope": "json",
+		"prefix": "_new-category",
+		"body": [
+			"{",
+			"    \"position\": 2.5,",
+			"    \"label\": \"Tutorial\",",
+			"    \"key\": \"unique-sidebar-item-key\",",
+			"    \"collapsible\": true,",
+			"    \"collapsed\": false,",
+			"    \"className\": \"red\",",
+			"    \"link\": {",
+			"        \"type\": \"generated-index\",",
+			"        \"title\": \"Tutorial overview\"",
+			"    },",
+			"    \"customProps\": {",
+			"        \"description\": \"This description can be used in the swizzled DocCard\"",
+			"    }",
+			"}",
+		],
+		"description": "Estructura básica de una nueva categoría en el sidebar"
+	}
+}

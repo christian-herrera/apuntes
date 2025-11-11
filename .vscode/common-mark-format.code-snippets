@@ -1,0 +1,96 @@
+{
+
+	// ==> YAML FRONT MATTER <== //
+	"YAML básico": {
+		"scope": "mdx",
+		"prefix": "_yaml-basic",
+		"body": [
+			"---",
+			"sidebar_position: ${1:1}",
+			"title: \"${2:Título de la página}\"",
+			"description: \"${3:Descripción de la página}\"",
+			"tags:",
+			"    - ${4:Etiqueta1}",
+			"---",
+			"",
+			"# ${2:Título de la página}",
+			"",
+			"${5:Contenido de la página}"
+		],
+		"description": "Estructura básica de un archivo markdown con YAML front matter"
+	},
+
+
+	// ==> TABLAS & CALLOUTS <== //
+	"Tablas": {
+		"scope": "mdx",
+		"prefix": "_tab",
+		"body": [
+			"import Tabs from \"@theme/Tabs\";",
+			"import TabItem from \"@theme/TabItem\";",
+			"",
+			"<Tabs>",
+			"    <TabItem value=\"${1:Valor 1}$\" label=\"${2:Pestaña 1}\" default>",
+			"        ${3:Valor de la pestaña 1}",
+			"    </TabItem>",
+			"    <TabItem value=\"${4:Valor 2}$\" label=\"${5:Pestaña 2}\" default>",
+			"        ${6: Valor de la pestaña 2}",
+			"    </TabItem>",
+			"</Tabs>",
+		],
+		"description": "Estructura básica de una nueva categoría en el sidebar"
+	},
+
+
+	"Callouts": {
+		"scope": "mdx",
+		"prefix": "_callout",
+		"body": [
+			":::${1:note,tip,info,warning,danger}[${2:Titulo de la nota}]",
+			"",
+			"${3:Contenido de la nota...}",
+			"",
+			":::",
+			"",
+			"$0",
+		],
+		"description": "Estructura básica de un callout"
+	},
+
+
+
+	// ==> IMAGENES & FILES <== //
+	"Imagenes SVG": {
+		"scope": "mdx",
+		"prefix": "_imgSVG",
+		"body": [
+			"import ${1:Nombre con que se importa} from '${2:Path desde .}';",
+			"",
+			"<${1} className=\"img ${3:img-10 img-50 ...}\" />\n$0"
+		],
+		"description": "Estructura básica para insertar una imagen o asset"
+	},
+
+	"Imagenes PNG/JPG": {
+		"scope": "mdx",
+		"prefix": "_imgPNG",
+		"body": [
+			"import ${1:Nombre con que se importa} from '${2:Path desde .}';",
+			"",
+			"<img src={${1}} className=\"img ${3:img-10 img-50 ...}\" />\n$0"
+		],
+		"description": "Estructura básica para insertar una imagen o asset"
+	},
+
+
+	"Archivos (Files)": {
+		"scope": "mdx",
+		"prefix": "_file",
+		"body": [
+			"import ${1:Nombre con que se importa} from '${2:Path desde .}';",
+			"",
+			"<a target=\"_blank\" href={${1}} >${3:Texto del hipervinculo}</a>\n$0"
+		],
+		"description": "Estructura básica para insertar una imagen o asset"
+	}
+}

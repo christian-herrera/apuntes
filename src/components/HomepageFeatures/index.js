@@ -4,32 +4,29 @@ import styles from './styles.module.css';
 
 const FeatureList = [
   {
-    title: 'Easy to Use',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    title: 'Desarrollo...',
+    Svg: require('@site/static/img/index/icon1.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Desarrollar software es mi pasión. Me encanta crear soluciones prácticas y divertidas que simplifiquen tareas y mejoren la experiencia de los usuarios.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    title: 'Documentación...',
+    Svg: require('@site/static/img/index/icon2.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Para mí, documentar es tan importante como el propio desarrollo. Me aseguro de dejar todo claro y sencillo para que cualquiera pueda entender y seguir mis proyectos sin problema.
       </>
     ),
   },
   {
-    title: 'Powered by React',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    title: 'Investigación...',
+    Svg: require('@site/static/img/index/icon3.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Investigar me permite explorar nuevas ideas y desafiar mi curiosidad. Siempre estoy buscando aprender algo nuevo y encontrar maneras diferentes de hacer las cosas.
       </>
     ),
   },
@@ -42,12 +39,13 @@ function Feature({Svg, title, description}) {
         <Svg className={styles.featureSvg} role="img" />
       </div>
       <div className="text--center padding-horiz--md">
-        <Heading as="h3">{title}</Heading>
-        <p>{description}</p>
+        <Heading as="h2">{title}</Heading>
+        <p className={styles.featureP}>{description}</p>
       </div>
     </div>
   );
 }
+
 
 export default function HomepageFeatures() {
   return (

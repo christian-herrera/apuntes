@@ -1,41 +1,33 @@
-# Website
+<div align="center">
 
-This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
+<img src="icons/docusaurus.svg" width="100">
+<h1 align="center">Apuntes</h1>
 
-## Installation
+![GitHub last commit](https://img.shields.io/github/last-commit/christian-herrera/apuntes)
+![Static Badge](https://img.shields.io/badge/version-v0.1.0-blue)
 
+![GitHub License](https://img.shields.io/github/license/christian-herrera/apuntes?style=for-the-badge)
+![GitHub language count](https://img.shields.io/github/languages/count/christian-herrera/apuntes?style=for-the-badge)
+![GitHub repo size](https://img.shields.io/github/repo-size/christian-herrera/apuntes?style=for-the-badge&color=%23FF6B2B)
+
+</div>
+
+Este repo es mi web de apuntes, se utiliza el entorno de [Docusaurus](https://docusaurus.io/) para simplificar el proceso de escritura y despliege.
+
+
+<br><br>
+
+
+# Deploy
+Varía en funcion del sistema operativo:
 ```bash
-yarn
+# Ubuntu
+USE_SSH=true
+GIT_USER=christian-herrera
+npm run deploy
+
+# Windows
+$env:USE_SSH="true"
+$env:GIT_USER="christian-herrera"
+npm run deploy
 ```
-
-## Local Development
-
-```bash
-yarn start
-```
-
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
-
-## Build
-
-```bash
-yarn build
-```
-
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
-
-## Deployment
-
-Using SSH:
-
-```bash
-USE_SSH=true yarn deploy
-```
-
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
