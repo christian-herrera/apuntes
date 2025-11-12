@@ -1,0 +1,96 @@
+---
+sidebar_position: 2
+title: "Sintaxis Básica"
+description: "Manejo básico de Quarto"
+tags:
+    - Quarto
+---
+
+# Sintaxis Básica
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+
+{/* TITLE: 1 */}
+## Asignar Clases CSS Personalizadas
+Dado un bloque de contenido, la sintaxis para asignar la clase `.textCenter` se utiliza:
+
+<Tabs groupId="md-html">
+    {/* MARK: TAB 1 */}
+    <TabItem value="markdown" label="Markdown" default>
+
+```markdown
+::: {.textCenter}
+Este es un bloque con una clase CSS personalizada.
+:::
+``` 
+    </TabItem>
+
+    {/* MARK: TAB 2 */}
+    <TabItem value="html" label="HTML" default>
+
+```html
+<div class="textCenter">
+Este es un bloque con una clase CSS personalizada.
+</div>
+```
+
+    </TabItem>
+</Tabs>
+
+<br /><br /><br />
+
+{/* TITLE: 2 */}
+## Agregar Estilos Inline
+Para aplicar estilos CSS en línea a un bloque de contenido, se utiliza la siguiente sintaxis:
+
+<Tabs groupId="md-html">
+    {/* MARK: TAB 1 */}
+    <TabItem value="markdown" label="Markdown" default>
+
+```markdown
+::: {style="text-align: center;"}
+Este es un bloque con una clase CSS personalizada.
+:::
+``` 
+    </TabItem>
+
+    {/* MARK: TAB 2 */}
+    <TabItem value="html" label="HTML" default>
+
+```html
+<div style="text-align: center;">
+Este es un bloque con una clase CSS personalizada.
+</div>
+```
+
+    </TabItem>
+</Tabs>
+
+
+<br /><br /><br />
+{/* TITLE: 3 */}
+## Insertar Imagenes
+Para insertar una imagen en Quarto, se utiliza la siguiente sintaxis:
+
+<Tabs groupId="md-html">
+    {/* MARK: TAB 1 */}
+    <TabItem value="markdown" label="Markdown" default>
+
+```markdown
+![](assets/images/logo.svg){height=600 style="margin: 0px"}
+``` 
+    </TabItem>
+
+    {/* MARK: TAB 2 */}
+    <TabItem value="html" label="HTML" default>
+
+```html
+<div style="text-align: center;">
+<img src="/images/img01.svg" style="max-width: 1600px;">
+</div>
+```
+
+    </TabItem>
+</Tabs>

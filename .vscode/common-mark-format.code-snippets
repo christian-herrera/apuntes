@@ -22,21 +22,33 @@
 
 
 	// ==> TABLAS & CALLOUTS <== //
-	"Tablas": {
+	"Tablas (Estructura)": {
 		"scope": "mdx",
-		"prefix": "_tab",
+		"prefix": "_tabStructure",
 		"body": [
 			"import Tabs from \"@theme/Tabs\";",
 			"import TabItem from \"@theme/TabItem\";",
 			"",
 			"<Tabs>",
-			"    <TabItem value=\"${1:Valor 1}$\" label=\"${2:Pestaña 1}\" default>",
+			"    <TabItem value=\"${1:Valor 1}\" label=\"${2:Pestaña 1}\" default>",
 			"        ${3:Valor de la pestaña 1}",
 			"    </TabItem>",
-			"    <TabItem value=\"${4:Valor 2}$\" label=\"${5:Pestaña 2}\" default>",
+			"    <TabItem value=\"${4:Valor 2}\" label=\"${5:Pestaña 2}\" default>",
 			"        ${6: Valor de la pestaña 2}",
 			"    </TabItem>",
 			"</Tabs>",
+		],
+		"description": "Estructura básica de una nueva categoría en el sidebar"
+	},
+
+	"Tab": {
+		"scope": "mdx",
+		"prefix": "_tab",
+		"body": [
+			"{/* MARK: Pestaña X */}",
+			"<TabItem value=\"${1:Valor X}\" label=\"${2:Pestaña X}\" default>",
+			"    ${3:Valor de la pestaña X}",
+			"</TabItem>",
 		],
 		"description": "Estructura básica de una nueva categoría en el sidebar"
 	},
@@ -92,5 +104,19 @@
 			"<a target=\"_blank\" href={${1}} >${3:Texto del hipervinculo}</a>\n$0"
 		],
 		"description": "Estructura básica para insertar una imagen o asset"
-	}
+	},
+
+
+
+	// ==> TITULOS <== //
+	"Título de sección (H1)": {
+		"scope": "mdx",
+		"prefix": "_title1",
+		"body": [
+			"<br /><br /><br />",
+			"{/* TITLE: ${1:X} */}",
+			"# ${2:Título de la sección}\n$0"
+		],
+		"description": "Estructura básica para un título de sección H1"
+	},
 }

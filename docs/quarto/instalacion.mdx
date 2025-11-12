@@ -1,0 +1,73 @@
+---
+sidebar_position: 1
+title: "Inicialización"
+description: "Instrucciones para la instalación de Quarto"
+tags:
+    - Quarto
+---
+
+# Inicialización de un Proyecto Quarto
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+{/* TITLE: 1 */}
+## Instalación
+
+Se utiliza el archivo de instalación oficial de Quarto, disponible en la [página de descargas de Quarto](https://quarto.org/docs/get-started/).
+
+Luego, se procede a crear la estructura:
+
+```bash
+quarto create-project mi-proyecto
+```
+Este comando crea la estructura básica (lo que se resalta), además es estos archivos se agregan algunos extras:
+
+```text
+mi-proyecto/
+├ 📄 mi-proyecto.qmd            
+├ 📄 .gitignore
+├ 📄 _quarto.yml
+// highlight-end
+├ 📄 _variables.yml
+├ 📂 images/
+└ 📂 assets/
+   ├ 📄 head-includes.html       
+   ├ 📄 particles-bg.html
+   ├ 📂 css/
+   │  ├ 📄 custom_theme.scss
+   │  └ 📄 main.css
+   ├ 📂 images/
+   │  └ 📄 favicon.svg
+   │  └ 📄 logo.svg
+   └ 📂 js/
+      └ 📄 particles.min.js
+```
+
+
+
+<br />
+{/* TITLE: 2 */}
+## Estructura de los archivos principales
+La estructura de cada archivo se tiene disponible en el siguiente enlace:
+
+import QuartoFile from '/static/files/quarto.zip';
+
+<a className="button button--secondary button--lg" href={QuartoFile} >Descargar Comprimido</a>
+
+
+
+<br /><br /><br /><br /><br />
+{/* TITLE: 3 */}
+## Variables Globales
+Es importante resaltar que las variables globales se definen en el archivo `_variables.yml`. Allí se pueden definir variables como colores, fuentes, tamaños, entre otros.
+
+La sintaxis para definir variables es la siguiente:
+
+```yaml
+email_personal: "pedro.gonzales@dominio"
+```
+Y luego, en el propio archivo `.qmd`, se pueden utilizar las variables de la siguiente manera:
+
+```markdown
+Mi correo es: `{{< var email_personal >}}`

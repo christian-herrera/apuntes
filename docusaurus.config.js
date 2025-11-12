@@ -137,8 +137,7 @@ const config = {
                 copyright: `Copyright © ${new Date().getFullYear()} Apuntes, Christian Herrera`,
             },
             prism: {
-                theme: prismThemes.github,
-                darkTheme: prismThemes.dracula,
+                theme: prismThemes.gruvboxMaterialDark,
             },
         }),
 };

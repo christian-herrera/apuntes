@@ -6,27 +6,32 @@
         {
             "label": "Build",
             "type": "shell",
-            "command": "npm run build"
+            "command": "npm run build",
+            "problemMatcher": []
         },
         {
             "label": "Clear",
             "type": "shell",
-            "command": "npm run clear"
+            "command": "npm run clear",
+            "problemMatcher": []
         },
         {
             "label": "Start Dev Server",
             "type": "shell",
-            "command": "npm run start"
+            "command": "npm run start",
+            "problemMatcher": []
         },
         {
             "label": "Publish",
             "type": "shell",
-            "command": "npm run deploy"
+            "command": "npm run deploy",
+            "problemMatcher": []
         },
         {
             "label": "Configure (Ubuntu)",
             "type": "shell",
-            "command": "SSH_AUTH=true && GIT_USER=christian-herrera"
+            "command": "SSH_AUTH=true && GIT_USER=christian-herrera",
+            "problemMatcher": []
         }
     ]
 }
