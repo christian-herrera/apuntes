@@ -1,1 +1,0 @@
-"use strict";(globalThis.webpackChunkweb_apuntes=globalThis.webpackChunkweb_apuntes||[]).push([[67],{9187:a=>{a.exports=JSON.parse('{"tags":[{"label":"Quarto","permalink":"/docs/tags/quarto","count":2},{"label":"React","permalink":"/docs/tags/react","count":1}]}')}}]);
