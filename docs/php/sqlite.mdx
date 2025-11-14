@@ -1,0 +1,67 @@
+---
+sidebar_position: 2
+title: "SQLite en PHP"
+description: "Funciones y técnicas para el hashing seguro de contraseñas en PHP."
+tags:
+    - React
+---
+
+# SQLite en PHP
+PHP ofrece una serie de funciones integradas para manejar el hashing seguro de contraseñas. Estas funciones están diseñadas para facilitar la creación, verificación y gestión de contraseñas de manera segura, utilizando algoritmos robustos y prácticas recomendadas.
+
+## Crear base de datos
+SQLite crea automaticamente el archivo cuando la conexión se abre.
+
+```bash
+$db = new PDO('sqlite:' . __DIR__ . '/database.db');
+
+// Opcional: activar errores como excepciones
+$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+$db->exec("
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL
+    )
+");
+
+echo "Base de datos y tabla 'users' creadas exitosamente.";
+```
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 2 */}
+## Patrón Singleton
+
+El patrón Singleton permite mantener una única conexión PDO durante toda la ejecución del script, evitando múltiples conexiones innecesarias.
+
+Para entender esto es necesario conocer como trabajan las clases en PHP.
+
+- `self` se refiere a la clase actual, no al objeto. Se usa cuando no existe un objeto, sino cuando se trabaja con métodos o propiedades de la clase (estáticas).
+- `$this` se refiere al objeto actual. Por ejemplo, para guardar datos de cada objeto instanciado de una clase.
+
+```php
+class Database {
+    private static $db = null;
+
+    private function __construct() {}
+
+    // Método estático para obtener la instancia única
+    public static function initDB() {
+        if (self::$db === null) {
+            $pathDB = __DIR__ . "/database.db";
+            self::$db = new PDO("sqlite:" . $pathDB);
+            self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        }
+        return self::$db;
+    }
+
+    public function getUser(string $email) {
+        $db = self::initDB();
+        $stmt = $db->query("SELECT . . .");
+        $stmt->execute([":email" => $email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $user ?: null;
+    }
+}
+```

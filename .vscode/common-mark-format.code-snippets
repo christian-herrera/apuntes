@@ -119,4 +119,16 @@
 		],
 		"description": "Estructura básica para un título de sección H1"
 	},
+
+
+	"Título de sección (H2)": {
+		"scope": "mdx",
+		"prefix": "_title2",
+		"body": [
+			"<hr style={{marginTop: \"40px\"}} />",
+			"{/* TITLE: ${1:X} */}",
+			"## ${2:Título de la sección}\n$0"
+		],
+		"description": "Estructura básica para un título de sección H2"
+	},
 }

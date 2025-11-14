@@ -138,6 +138,7 @@ const config = {
             },
             prism: {
                 theme: prismThemes.gruvboxMaterialDark,
+                additionalLanguages: ["php", "bash"],
             },
         }),
 };
