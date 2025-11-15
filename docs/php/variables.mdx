@@ -1,0 +1,274 @@
+---
+sidebar_position: 2
+title: "Variables"
+description: "Funciones y técnicas para el hashing seguro de contraseñas en PHP."
+tags:
+    - PHP
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+{/* TITLE: 1 */}
+# Variables
+En PHP se identifican por un signo de dólar (`$`) seguido del nombre de la variable. Las variables en PHP son dinámicamente tipadas, lo que significa que no es necesario declarar su tipo antes de usarlas; el tipo se determina automáticamente según el valor asignado.
+
+
+<br />
+{/* TITLE: 2 */}
+## Variables Simples
+Las variables simples en PHP pueden contener tipos de datos primitivos como enteros, flotantes, booleanos y cadenas de texto. Ejemplos:
+```php
+$num1 = 42;         // Entero
+$num2 = 3.14;       // Flotante
+$result = true;     // Booleano
+$name = "Juan";     // String
+```
+Y las operaciones mas importantes para armar strings son:
+```php
+$nombre = "Juan";
+$user = ["nombre" => $nombre, "edad" => 30];
+$obj = (object) ["id" => 10, "nombre" => $nombre];
+
+// Para variables simples, se puede concatenar con el operador `.`
+$msg = "Bienvenido " . $user["nombre"] . "!";          // -> "Bienvenido Juan!"
+
+// Cuando se usa comillas dobles, se pueden insertar variables directamente
+$msg = "Usuario: ${user['nombre']} (ID: {$obj->id})";  // -> "Usuario: Juan (ID: 10)"
+``` 
+
+
+<br />
+{/* TITLE: 3 */}
+## Variables Compuestas
+Las variables compuestas en PHP incluyen:
+<Tabs groupId="VarCompuestos">
+    {/* MARK: Pestaña Array Indexado */}
+    <TabItem value="arrayIndexado" label="Array Indexado" default>
+        ```php
+        $numeros = [1, 2, 3, 4, 5];
+        echo $numeros[0];           // -> Salida: 1
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña Array Asociativo */}
+    <TabItem value="arrayAsociativo" label="Array Asociativo">
+        ```php
+        $user = [
+            "nombre" => "Ana",
+            "edad" => 28
+        ];
+        echo $user["nombre"];       // -> Salida: Ana
+        ```        
+    </TabItem>
+
+    {/* MARK: Pestaña Array Multidimensional */}
+    <TabItem value="arrayMulti" label="Array Multidimensional">
+        ```php
+        $users = [
+            ["nombre" => "Luis", "edad" => 30],
+            ["nombre" => "Marta", "edad" => 25]
+        ];
+        echo $users[1]["edad"];     // -> Salida: 25
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña Objetos */}
+    <TabItem value="objects" label="Objetos" >
+        Una forma simple de crear objetos en PHP es utilizando la clase genérica `stdClass`.
+        ```php
+        $user = (object) [];       // Clase genérica vacía
+        // $user = new stdClass(); // Otra forma de crear un objeto vacío
+
+        // Asigna propiedades
+        $user->nombre = "Carlos";
+        $user->edad = 35;
+        $user->email = "carlos@mail.com";
+
+        // Imprime valor de una propiedad
+        echo $user->nombre;  // -> Salida: Carlos
+        ```
+
+        Una forma mas avanzada es definiendo tus propias clases:
+        ```php
+        class userDTO {
+            public string $nombre;
+            public int $edad;
+            public string $email;
+        }
+
+        $user = new userDTO();  // Usa la plantilla definida
+        $user->nombre = "Carlos";
+        $user->edad = 35;
+        $user->email = "carlos@mail.com";
+
+        echo $user->nombre;  // -> Salida: Carlos
+        ```
+    </TabItem>
+</Tabs>
+
+
+Dentro de estos tipos de variables se pueden usar funciones especificas para recorrerlos, modificarlos, etc.
+
+<Tabs groupId="VarCompuestos">
+    {/* MARK: Pestaña Array Indexado */}
+    <TabItem value="arrayIndexado" label="Array Indexado" default>
+        ```php
+        $numeros[] = 6;             // Agrega el valor 6 al final del array
+        array_push($numeros, 6);    // Agrega el valor 6 al final del array
+        array_unshift($numeros, 0); // Agrega el valor 0 al inicio del array
+
+        array_pop($numeros);        // Elimina el último
+        array_shift($numeros);      // Elimina el primer
+
+        in_array(3, $numeros);      // Verifica si el valor 3 está en el array
+        array_search(3, $numeros);  // Devuelve el índice del valor 3
+
+        sort($numeros);             // Ordena el array ascendentemente
+        rsort($numeros);            // Ordena el array descendentemente
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña Array Asociativo */}
+    <TabItem value="arrayAsociativo" label="Array Asociativo">
+        ```php
+        $user["email"] = "ana@mail.com"; // Agrega o actualiza la clave 'email'
+        $user["edad"];                   // Elimina la clave 'edad'
+
+        unset($user["edad"]);            // Elimina la clave 'edad'
+
+        in_array("Ana", $user);          // -> true (verifica si el valor "Ana" está en el array)
+        array_search("Ana", $user);      // -> "nombre" (devuelve la clave del valor "Ana")
+
+        array_keys($user);               // -> ["nombre", "email"] (devuelve un array con las claves)
+        array_values($user);             // -> ["Ana", 28] (devuelve un array con los valores)
+
+        asort($user);                    // Ordena el array por valores ascendentemente
+        ksort($user);                    // Ordena el array por claves ascendentemente
+        ```        
+    </TabItem>
+
+    {/* MARK: Pestaña Array Multidimensional */}
+    <TabItem value="arrayMulti" label="Array Multidimensional">
+        ```php
+        // Recorro todos los usuarios
+        foreach($users as $u) {
+            echo $u["nombre"] . ", "; // -> Salida: Luis, Marta
+        }
+
+        // Agrega
+        $users[] = ["nombre" => "Carlos", "edad" => 22];
+
+        // Elimina
+        unset($users[1]); // Elimina a Marta
+
+        // Buscar dentro de una columna
+        array_column($users, "nombre"); // -> ["Luis", "Carlos"]
+
+        // Ordenar por una columna
+        usort($users, function($a, $b) {
+            return $a["edad"] <=> $b["edad"];
+        });
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña Fun. Generales */}
+    <TabItem value="generic" label="Fun. Generales">
+        Para todos los tipos de ***Arrays***, ecisten funciones generales como:
+        ```php
+        // Cuenta la cantidad de elementos
+        count($array);
+
+        // Filtrar elementos según una condición
+        $adultos = array_filter($users, fn($u) => $u["edad"] >= 18);
+
+        // Mapear elementos a una nueva estructura
+        $soloNombres = array_map(fn($u) => $u["nombre"], $users);
+
+        // Concatena dos arrays
+        $merged = array_merge($array1, $array2);
+
+        // Verifica si una clave existe en un array asociativo
+        array_key_exists("nombre", $user);
+        ```
+    </TabItem>
+</Tabs>
+
+
+<br />
+{/* TITLE: 4 */}
+## Especiales
+```php
+$nullVar = null;                    // Variable nula
+$resource = fopen("file.txt", "r"); // Recurso
+```
+
+
+
+<hr style={{marginTop: "60px", marginBottom: "60px"}} />
+{/* TITLE: 5 */}
+# Clases y Objetos
+PHP es un lenguaje orientado a objetos, lo que significa que se puede definir clases propias y crear objetos basados en esas clases. Una clase es una plantilla para crear objetos, y un objeto es una instancia de una clase.
+
+:::tip[Recordar...]
+
+- Los métodos y propiedades `static` pertenecen a la clase y no a los objetos creados a partir de ella.
+- Se accede a las ***propiedades estaticas*** usando `self::$propiedad` y a los métodos estáticos usando `self::metodo()`.
+- Se accede a las ***propiedades de una instancia*** usando `$this->propiedad` y a los métodos del objeto usando `$this->metodo()`.
+
+`self` solo se usa dentro de la clase para acceder a miembros estáticos, mientras que `$this` se usa desde un objeto para acceder a sus propios miembros.
+:::
+
+Entonces, una clase en PHP que contiene métodos y propiedades, se complementa con la visibilidad de las mismas usando:
+- `public`: accesible desde cualquier lugar.
+- `private`: accesible solo dentro de la clase.
+- `protected`: accesible dentro de la clase y sus subclases.
+
+Un ejemplo completo de definición e instancia de una clase es el siguiente:
+
+<Tabs>
+    {/* MARK: Pestaña Definición */}
+    <TabItem value="defClase" label="Definición" default>
+        ```php title="Usuario.php"
+        class Usuario {
+            // 1) Propiedades
+            private string $nombre;
+            private int $edad;
+            private static $localidad = "La Plata";
+
+            // 2) Constructor
+            public function __construct(string $nombre, int $edad) {
+                $this->nombre = $nombre;
+                $this->edad = $edad;
+            }
+
+            // 3) Métodos públicos
+            public function saludar(): string {
+                return "Hola, soy {$this->nombre}, tengo {$this->edad} años y vivo en " . self::$localidad . ".";
+            }
+
+            // 4) Getters y setters (si son necesarios)
+            public function getNombre(): string {
+                return $this->nombre;
+            }
+
+            public function setEdad(int $edad): void {
+                $this->edad = $edad;
+            }
+        }
+        ```
+    </TabItem>    
+
+    {/* MARK: Pestaña Instancia */}
+    <TabItem value="instancia" label="Instancia">
+        ```php title="index.php"    
+        require_once __DIR__ . '/Usuario.php';
+
+        $usuario = new Usuario("Pedro", 25);
+        echo $usuario->saludar(); // -> "Hola, soy Pedro, tengo 25 años y vivo en La Plata."
+        ```
+    </TabItem>
+</Tabs>
+
+
+

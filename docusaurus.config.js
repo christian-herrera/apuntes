@@ -71,7 +71,7 @@ const config = {
                 title: "Apuntes",
                 logo: {
                     alt: "My Site Logo",
-                    src: "img/logo.png",
+                    src: "img/logo.svg",
                 },
                 items: [
                     {

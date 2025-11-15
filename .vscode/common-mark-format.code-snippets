@@ -30,12 +30,7 @@
 			"import TabItem from \"@theme/TabItem\";",
 			"",
 			"<Tabs>",
-			"    <TabItem value=\"${1:Valor 1}\" label=\"${2:Pestaña 1}\" default>",
-			"        ${3:Valor de la pestaña 1}",
-			"    </TabItem>",
-			"    <TabItem value=\"${4:Valor 2}\" label=\"${5:Pestaña 2}\" default>",
-			"        ${6: Valor de la pestaña 2}",
-			"    </TabItem>",
+			"	$0",
 			"</Tabs>",
 		],
 		"description": "Estructura básica de una nueva categoría en el sidebar"
@@ -45,9 +40,9 @@
 		"scope": "mdx",
 		"prefix": "_tab",
 		"body": [
-			"{/* MARK: Pestaña X */}",
+			"{/* MARK: Pestaña $2 */}",
 			"<TabItem value=\"${1:Valor X}\" label=\"${2:Pestaña X}\" default>",
-			"    ${3:Valor de la pestaña X}",
+			"    ${0:Valor de la pestaña X}",
 			"</TabItem>",
 		],
 		"description": "Estructura básica de una nueva categoría en el sidebar"

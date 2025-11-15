@@ -1,18 +1,25 @@
 ---
-sidebar_position: 2
+sidebar_position: 3
 title: "SQLite en PHP"
 description: "Funciones y técnicas para el hashing seguro de contraseñas en PHP."
 tags:
-    - React
+    - PHP
+    - SQLite
 ---
 
-# SQLite en PHP
-PHP ofrece una serie de funciones integradas para manejar el hashing seguro de contraseñas. Estas funciones están diseñadas para facilitar la creación, verificación y gestión de contraseñas de manera segura, utilizando algoritmos robustos y prácticas recomendadas.
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
 
+{/* TITLE: 1 */}
+# SQLite en PHP
+SQLite es una base de datos ligera y embebida que no requiere un servidor separado para funcionar. En PHP, se puede utilizar SQLite a través de la extensión PDO (PHP Data Objects), que proporciona una interfaz uniforme para acceder a diferentes bases de datos.
+
+
+{/* TITLE: 2 */}
 ## Crear base de datos
 SQLite crea automaticamente el archivo cuando la conexión se abre.
 
-```bash
+```php
 $db = new PDO('sqlite:' . __DIR__ . '/database.db');
 
 // Opcional: activar errores como excepciones
@@ -33,20 +40,25 @@ echo "Base de datos y tabla 'users' creadas exitosamente.";
 {/* TITLE: 2 */}
 ## Patrón Singleton
 
-El patrón Singleton permite mantener una única conexión PDO durante toda la ejecución del script, evitando múltiples conexiones innecesarias.
+El patrón Singleton permite asegurar que exista una única instancia de un recurso durante toda la ejecución del programa.
+En el caso de PHP, se utiliza comúnmente para mantener una sola conexión PDO a la base de datos, evitando crear múltiples conexiones innecesarias.
 
-Para entender esto es necesario conocer como trabajan las clases en PHP.
+Para entender su funcionamiento, es importante distinguir entre:
 
-- `self` se refiere a la clase actual, no al objeto. Se usa cuando no existe un objeto, sino cuando se trabaja con métodos o propiedades de la clase (estáticas).
-- `$this` se refiere al objeto actual. Por ejemplo, para guardar datos de cada objeto instanciado de una clase.
+- `self`: referencia a la clase, no a un objeto. Se usa para acceder a métodos o propiedades estáticas.
+- `$this`: referencia al objeto instanciado. Solo existe dentro de métodos no estáticos.
 
-```php
+Como el patrón Singleton no trabaja con objetos instanciados manualmente (no se usa new), sino con una instancia global controlada por la clase, se utiliza self para acceder a la propiedad que almacenará esa única instancia.
+
+```php title="Database.php"
 class Database {
+    // Instancia única (Singleton)
     private static $db = null;
 
+    // Constructor privado: evita que se pueda hacer "new Database()"
     private function __construct() {}
 
-    // Método estático para obtener la instancia única
+    // Método estático que devuelve siempre la misma conexión PDO
     public static function initDB() {
         if (self::$db === null) {
             $pathDB = __DIR__ . "/database.db";
@@ -56,12 +68,167 @@ class Database {
         return self::$db;
     }
 
+    // Ejemplo de método que sua la conexion Singleton
     public function getUser(string $email) {
         $db = self::initDB();
-        $stmt = $db->query("SELECT . . .");
-        $stmt->execute([":email" => $email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $user ?: null;
+        try {
+            $stmt = $db->query("SELECT . . .");
+            $stmt->execute([":email" => $email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $user ?: false;
+        } catch(PDOException $e) {
+            return null;  // Error
+        }
     }
 }
 ```
+
+
+:::note[Entonces...]
+
+- La primera ves que se llama a `Database::initDB()`, se crea la conexión PDO y se almacena en `self::$db`.
+- En llamadas posteriores, se devuelve la misma instancia almacenada en `self::$db`, evitando crear nuevas conexiones.
+- Durante todo el script, solo existirá una única conexión a la base de datos gestionada por la clase `Database`.
+
+La forma de utilizar esto es simplemente:
+
+```php title="index.php"
+require_once __DIR__ . '/Database.php';
+$rows = Database::getUser("chris@dominio.com");
+```
+
+:::
+
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 2 */}
+## Métodos Útiles
+Se listan a continuación algunos métodos útiles para trabajar con SQLite en PHP utilizando PDO.
+
+
+
+<Tabs>
+    {/* MARK: Pestaña Configuraciones */}
+    <TabItem value="config" label="Configuraciones" default>
+        `setAttribute()` permite configurar parámetros de la conexión PDO.
+        ```php
+        // Configura:
+        // - PDO puede lanzar excepciones en caso de error
+        // - Devuelve arrays asociativos por defecto, (['columna' => valor, ...])
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION)
+        ```
+    </TabItem>
+    {/* MARK: Pestaña Ejecuciones */}
+    <TabItem value="exec" label="Ejecuciones">
+        `prepare()` simplemente prepara una sentencia SQL para su ejecución posterior. Luego `execute()` ejecuta la sentencia preparada completando los parámetros si es necesario.
+        ```php
+        $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (:username, :password)");
+        $stmt->execute([
+            ':username' => 'usuario1',
+            ':password' => password_hash('mi_contraseña', PASSWORD_DEFAULT)
+        ]);
+        ```
+
+        Otra opción es usar `query()`para ejecutar una sentencia SQL directamente sin parámetros.
+        ```php
+        $stmt = $pdo->query("SELECT * FROM users");
+        ```
+    </TabItem>
+
+
+    {/* MARK: Pestaña Obtención de datos */}
+    <TabItem value="fetch" label="Obtención de datos">
+        `fetch()` obtiene solo ***una fila*** de la consulta ejecutada. Si no hay más filas, devuelve `false`.
+        ```php
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);  // ['id' => 1, 'email' => 'test@test.com'])
+        $user = $stmt->fetch(PDO::FETCH_OBJ);    // $user->id, $user->email
+        ```
+
+        Para obtener ***todas las filas*** de una consulta, se usa `fetchAll()` el cual devuelve un array que dentro contiene un array por cada fila obtenida. Si no encuentra ninguna fila, entonces devuelve un array vacío `[]`.
+        ```php
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);  // [ ['id' => 1, 'email' => 'test@test.com'], ... ]
+        $users = $stmt->fetchAll(PDO::FETCH_OBJ);    // [ $user1, $user2, ... ]
+        ```
+        Pero puede consumir mucha memoria si la tabla es grande.
+    </TabItem>
+
+
+    {/* MARK: Pestaña Contar Resultados */}
+    <TabItem value="count" label="Contar Resultados">
+        Solo para las consultas `INSERT`, `UPDATE` o `DELETE`, se puede hacer uso de `rowCount()` para obtener el número de filas *afectadas*:
+        ```php
+        return $stmt->rowCount() > 0;  // True si se afectó al menos una fila
+        ```
+
+        Cuando se realiza un `INSERT`, se puede obtener el ID de la última fila insertada con `lastInsertId()`:
+        ```php
+        $lastId = $pdo->lastInsertId();
+        ```
+    </TabItem>
+</Tabs>
+
+
+<br /><br />
+Entonces, con estas funciones se pueden crear algunos métodos básicos para cada operacion:
+
+<Tabs>
+    {/* MARK: Pestaña SELECT */}
+    <TabItem value="select" label="SELECT" default>
+        Utilizando parámetros:
+        ```php
+        $db = Database::initDB();
+        $stmt = $db->prepare("SELECT * FROM users WHERE email = :email");
+        $stmt->execute([":email" => $email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC); // ["id" => 1, "email" => "test@test.com"]
+                                                // `false` si no existe
+
+        if(!$user) { /* No encontrado */}
+        ```
+
+        Y si no hay parámetrso se simplifica:
+        ```php
+        $db = Database::initDB();
+        $stmt = $db->query("SELECT id, email FROM users");
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC); // -> [ ["id" => 1, "email" => "test@test.com"], ... ]
+                                                    // -> [] si no hay usuarios
+        if(empty($users)) { /* No hay usuarios */ }
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña INSERT */}
+    <TabItem value="insert" label="INSERT" default>
+        La forma de hacer un *insert* seguro es con:
+        ```php
+        $db = Database::initDB();
+        try {
+            $stmt = $db->prepare("INSERT INTO users (email, password) VALUES (:email, :password)");
+            $stmt->execute([
+                ":email" => $email,
+                ":password" => password_hash($password, PASSWORD_DEFAULT)
+            ]);
+            return $db->lastInsertId();  // -> Devuelve el ID del nuevo usuario
+        } catch(PDOException $e) {
+            return null;  // -> Error (ej: email ya existe)
+        }
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña UPDATE */}
+    <TabItem value="update" label="UPDATE" default>
+        Los *updates* se realizan de forma similar:
+        ```php
+        $db = Database::initDB();
+        try {
+            $stmt = $db->prepare("UPDATE users SET password = :password WHERE email = :email");
+            $stmt->execute([
+                ":password" => password_hash($newPassword, PASSWORD_DEFAULT),
+                ":email" => $email
+            ]);
+            return $stmt->rowCount() > 0;  // -> True si se actualizó al menos un usuario
+        } catch(PDOException $e) {
+            return null;  // -> Error
+        }
+        ```
+    </TabItem>
+    
+</Tabs>
