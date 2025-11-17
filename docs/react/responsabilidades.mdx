@@ -1,0 +1,209 @@
+---
+sidebar_position: 2
+title: "Responsabilidades"
+description: "Responsabilidades y buenas prácticas al usar React."
+tags:
+    - React
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+<br /><br /><br />
+{/* TITLE: 1 */}
+# Responsabilidades
+La correcta separación de responsabilidades en una aplicación React es crucial para mantener un código limpio, escalable y fácil de mantener. A continuación, se describen las responsabilidades típicas de los distintos tipos de archivos y componentes en una aplicación React:
+
+<Tabs>
+    {/* MARK: Pestaña Páginas */}
+    <TabItem value="pages" label="Páginas" default>
+        ***Las páginas son responsables de manejar la lógica de alto nivel, como la gestión del estado global, la navegación y la interacción con servicios externos. Deben orquestar la carga de datos y pasar los datos necesarios a los componentes hijos para su renderizado.***
+
+        - Manejar el estado global o local complejo.
+        - Llamar a servicios/API (directamente o vía hooks).
+        - Usar `useEffect` para manejar efectos secundarios o cargar datos iniciales.
+        - Pasar datos (procesados o no) y funciones a los componentes hijos.
+        - Maneja la navegacion con `useNavigate`.
+        - Conectar contextos.
+
+        Lo que no deben hacer las páginas:
+
+        - Renderizar UI compleja.
+        - Hacer lógica de negocio compleja dentro del JSX.
+        - Tener llamadas axios o fetch directamente en el JSX.
+        - Mezclar demasiadas responsabilidades.
+    </TabItem>   
+
+    {/* MARK: Pestaña Componentes */}
+    <TabItem value="components" label="Componentes" default>
+        ***Los componentes son responsables de la presentación y la interacción del usuario. Deben centrarse en renderizar la UI basada en las props que reciben y manejar estados simples relacionados con la interfaz de usuario.***
+
+        - Llamadas HTTP (axios, fetch).
+        - Encapsular endpoints (`getFiles`, `deleteUser`, `login`, etc).
+        - Procesar las respuestas del servidor.
+        - Manejar errores de red.
+        - Convertir datos de la API al formato de la aplicación y viceversa.
+        - Contener la lógica de negocio que no pertenece a la UI.
+
+        Lo que no deben hacer los servicios:
+
+        - Manejar estado de React.
+        - Renderizar componentes o UI.
+        - Trabajar con JSX.
+        - Conocer cómo funciona la interfáz (deben ser reutilizables).
+        - Acceder al DOM.
+    </TabItem> 
+
+
+    {/* MARK: Pestaña Servicios */}
+    <TabItem value="services" label="Servicios" default>
+        ***Los servicios son responsables de manejar la comunicación con APIs externas y encapsular la lógica de negocio que no está directamente relacionada con la UI. Deben proporcionar una interfaz clara para que las páginas y componentes puedan interactuar con los datos.***
+
+        - Renderizar UI (tablas, tarjetas, modales, formularios, etc).
+        - Recibir props (datos, handlers, flags, textos, etc).
+        - Emitir eventos a la *Page* (onClick, onChange, etc).
+        - Manejar estado simple (inputs, toggles, tabs, etc) vía `useState` o `useReducer`.
+        - Reutilizar lógica usando hooks personalizados.
+        - Renderizar listas, inputs, botones, etc.
+
+        Lo que no deben hacer los componentes:
+
+        - Utilizar contextos directamente (preferible pasar por props).
+        - Llamar a servicios/API directamente.
+        - Manejar estado global complejo.
+        - Usar lógica de negocio compleja
+        - Usar `useEffect` para cargar datos de la API.
+        - Gestionar navegación.
+    </TabItem>
+
+
+    {/* MARK: Pestaña Hooks */}
+    <TabItem value="hooks" label="Hooks" default>
+        ***Los hooks son responsables de encapsular lógica reutilizable relacionada con el estado y los efectos secundarios en React. Deben facilitar la reutilización de código entre componentes y páginas sin introducir dependencias innecesarias.***
+
+        - Encapsular lógica reutilizable entre componentes o páginas.
+        - Manejar estado y efectos (useState, useEffect, useReducer, etc).
+        - Llamar a servicios/API.
+        - Centralizar cargado de datos con estados: loading, error, data.
+        - Conectar contextos (useAuth, useTheme, etc).
+        - Simplificar componentes o páginas (dejando el código limpio).
+
+        Lo que no deben hacer los hooks:
+
+        - Renderizar UI.
+        - Ser usados como servicios (aunque llamen a servicios).
+        - Tener JSX.
+        - Ser demasiado especificos (la idea es la reutilización).
+    </TabItem>
+</Tabs>
+
+
+
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 2 */}
+## Ejemplo Simple
+
+<Tabs>
+    {/* MARK: Pestaña Página */}
+    <TabItem value="page" label="Página" default>
+        En el siguiente ejemplo, la linea `5` hace uso del hook `useUsers` para cargar los usuarios desde un servicio, y luego pasa esos datos al componente `UserList` en la linea `15` para su renderizado.
+        ```jsx title="MainPage.jsx" showLineNumbers {5,15}
+        import UserList from "../components/UserList.jsx";
+        import useUsers from "../hooks/useUsers.js";
+
+        export default function MainPage() {
+            const { users, loading, error, reload } = useUsers();
+
+            return (
+                <div>
+                    <h1>Usuarios</h1>
+
+                    {loading && <p>Cargando...</p>}
+                    {error && <p>Error al cargar: {error}</p>}
+
+                    {!loading && !error && (
+                        <UserList users={users} onReload={reload} />
+                    )}
+                </div>
+            );
+        }
+        ``` 
+    </TabItem>
+
+
+    {/* MARK: Pestaña Componente */}
+    <TabItem value="component" label="Componente" default>
+        El componente `UserList` en este ejemplo es responsable de renderizar la lista de usuarios y proporcionar un botón para recargar los datos. Recibe los datos y la función de recarga como props desde la página principal.
+
+        ```jsx title="UserList.jsx" showLineNumbers
+        export default function UserList({ users, onReload }) {
+            return (
+                <div>
+                    <button onClick={onReload}>Recargar</button>
+
+                    <ul>
+                        {users.map(u => (
+                            <li key={u.id}>{u.name}</li>
+                        ))}
+                    </ul>
+                </div>
+            );
+        }
+        ```
+    </TabItem>
+
+
+    {/* MARK: Pestaña Servicio */}
+    <TabItem value="service" label="Servicio" default>
+        El servicio `userService` encapsula la lógica para obtener los usuarios desde una API externa. Este servicio es llamado por el hook `useUsers` para obtener los datos necesarios.
+        ```jsx title="userService.js"
+        import axios from "axios";
+
+        export async function getUsers() {
+            const res = await axios.get("https://jsonplaceholder.typicode.com/users");
+            return res.data;
+        }
+        ```
+    </TabItem>
+
+
+    {/* MARK: Pestaña Hook */}
+    <TabItem value="hook" label="Hook" default>
+        El hook `useUsers` maneja la lógica de carga de usuarios, incluyendo el estado de carga, los errores y la recarga de datos. Este hook es utilizado por la página principal para obtener y gestionar los datos de los usuarios.
+        ```jsx title="useUsers.js"
+        import { useState, useEffect } from "react";
+        import { getUsers } from "../services/userService.js";
+
+        export default function useUsers() {
+            const [users, setUsers] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            async function load() {
+                try {
+                    setLoading(true);
+                    const data = await getUsers();
+                    setUsers(data);
+                    setError(null);
+                } catch (e) {
+                    setError("No se pudieron cargar los usuarios.");
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            useEffect(() => {
+                load();
+            }, []);
+
+            return {
+                users,
+                loading,
+                error,
+                reload: load,
+            };
+        }
+        ```
+    </TabItem>
+</Tabs>

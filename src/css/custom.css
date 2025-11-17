@@ -33,6 +33,7 @@
     color: white;
     margin-bottom: 3em;
 
+    background-color: #1b1b1d;
     background-image: linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.2)), url(/static/img/index/background.jpg);
     background-size: cover;
     background-position: center 40%;
