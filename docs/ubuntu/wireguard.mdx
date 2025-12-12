@@ -1,0 +1,187 @@
+---
+sidebar_position: 1
+title: "WireGuard"
+description: ""
+tags:
+    - Ubuntu
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+{/* TITLE: 1 */}
+# Que es WireGuard?
+WireGuard es una solución de VPN (Red Privada Virtual) moderna y eficiente que se destaca por su simplicidad, velocidad y seguridad. Fue diseñado para ser fácil de configurar y utilizar, a la vez que ofrece un alto rendimiento y una fuerte protección criptográfica.
+
+Para el ejemplo, se supone que se tienen la siguiente infraestructura de red:
+- **Servidor**: Ubuntu 25 con los siguientes datos:
+    - La red local es `10.0.0.0/24`.
+    - La interfaz de red conectada a internet es `enp2s0`. 
+    - La VPN utilizará la subred `10.15.0.0/24`.
+- **Peer 1**: Ubuntu Desktop 25, con los siguientes datos:
+    - La interfaz de red es `wlp2s0`.
+    - La interfaz de red nueva asociada a la VPN será `server` (mismo nombre del archivo de configuracion de WireGuard).
+    - La IP asignada a la nueva interfaz será `10.15.0.2`.
+
+La autenticación entre el servidor y los clientes (peers) se realiza mediante claves públicas y privadas, lo que garantiza una comunicación segura y cifrada.
+
+
+{/* TITLE: 2 */}
+## Servidor
+
+{/* TITLE: 2.1 */}
+### Instalación y Configuracion
+Primero se instala WireGuard en el servidor Ubuntu con el siguiente comando:
+
+```bash
+sudo apt update
+sudo apt install wireguard
+```
+Luego, se deben generar las claves públicas y privadas para el servidor:
+
+```bash
+sudo su
+cd /etc/wireguard
+wg genkey | tee privatekey | wg pubkey > publickey
+```
+
+A continuación se crea el archivo de configuración del servidor `/etc/wireguard/wg0.conf` con el siguiente contenido:
+
+```bash title="/etc/wireguard/wg0.conf"
+[Interface]
+PrivateKey = KCFaTfbVGoCxtuLU1/fqq6B8mC5Gmj/qUOjw2izy5lw= # Clave privada del servidor
+Address = 10.15.0.1/24
+ListenPort = 30000
+
+# Estos archivos deben tener permisos de ejecucion
+PostUp = /etc/wireguard/wg0-up.sh
+PostDown = /etc/wireguard/wg0-down.sh
+
+# Peer 1
+[Peer]
+PublicKey = eOUS5FZSNdw21R2pDN7EZkpdfyiHejGbOxDB+lAqMXw= # Clave publica del Peer 1
+AllowedIPs = 10.15.0.2/32
+
+# Peer 2
+[Peer]
+PublicKey = v/Zgq1Q6m7d5BuHZJFiqWenX+z+LNlnM1Auy/ZmwDjk= # Clave publica del Peer 2
+AllowedIPs = 10.15.0.3/32
+```
+
+También se deben crear los scripts `wg0-up.sh` y `wg0-down.sh` para configurar las reglas de firewall:
+
+<Tabs>
+    {/* MARK: Pestaña wg0-up.sh */}
+    <TabItem value="up" label="wg0-up.sh" default>
+
+        ```bash title="/etc/wireguard/wg0-up.sh"
+        #!/bin/bash
+        # Agrega las reglas de iptables necesarias cuando se levanta la interfaz wg0
+        iptables -A FORWARD -i wg0 -j ACCEPT                                                        # Acepta trafico entrante por wg0
+        iptables -A FORWARD -o wg0 -j ACCEPT                                                        # Acepta trafico saliente por wg0
+        iptables -t nat -A POSTROUTING -s 10.15.0.0/24 -d 10.0.0.0/24 -j MASQUERADE                 # Todo lo que llega por VPN con destino al LAN, aplica el NAT(LAN)
+        iptables -t nat -A POSTROUTING -s 10.15.0.0/24 ! -d 10.0.0.0/24 -o enp2s0 -j MASQUERADE     # Todo lo que llega por VPN con destino a Internet, aplica el NAT(Internet)
+        ```
+
+    </TabItem>
+
+    {/* MARK: Pestaña wg0-down.sh */}
+    <TabItem value="down" label="wg0-down.sh" default>
+        
+        ```bash title="/etc/wireguard/wg0-down.sh"
+        #!/bin/bash
+        # Elimina las reglas de iptables cuando se baja la interfaz wg0
+        iptables -D FORWARD -i wg0 -j ACCEPT                                                        # Acepta trafico entrante por wg0
+        iptables -D FORWARD -o wg0 -j ACCEPT                                                        # Acepta trafico saliente por wg0
+        iptables -t nat -D POSTROUTING -s 10.15.0.0/24 -d 10.0.0.0/24 -j MASQUERADE                 # Todo lo que llega por VPN con destino al LAN, aplica el NAT(LAN)
+        iptables -t nat -D POSTROUTING -s 10.15.0.0/24 ! -d 10.0.0.0/24 -o enp2s0 -j MASQUERADE     # Todo lo que llega por VPN con destino a Internet, aplica el NAT(Internet)
+        ```
+
+    </TabItem>
+</Tabs>
+
+<br/>
+{/* TITLE: 2.2 */}
+### Configuraciones Adicionales
+Se debe habilitar el puerto usado por WireGuard (30000 en este caso) en el firewall del servidor:
+
+```bash
+sudo ufw allow 30000/udp
+```
+Adicionalmente, se debe habilitar el reenvío de paquetes en el servidor editando el archivo `/etc/sysctl.conf` y descomentando o agregando la siguiente línea:
+
+```bash
+net.ipv4.ip_forward=1
+```
+Para aplicar los cambios ejecutar: `sudo sysctl -p`.
+
+
+<br/>
+{/* TITLE: 2.3 */}
+### Puesta en Marcha
+Para iniciar la interfaz de WireGuard en el servidor, ejecutar el siguiente comando:
+
+```bash
+sudo systemctl enable wg-quick@wg0
+sudo systemctl start wg-quick@wg0
+```
+Si todo es correcto, se crea el servicio y queda activo. Para visualizar el estado de la interfaz, se puede usar el comando:
+
+```bash
+watch -n 1 "sudo wg show"
+```
+
+
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 3 */}
+## Cliente (Peer 1)
+
+{/* TITLE: 3.1 */}
+### Instalación y Configuracion
+Primero se instala WireGuard en el cliente con el siguiente comando:
+
+```bash
+sudo apt update
+sudo apt install wireguard
+```
+Luego, se deben generar las claves públicas y privadas para el servidor:
+
+```bash
+sudo su
+cd /etc/wireguard
+wg genkey | tee privatekey | wg pubkey > publickey
+```
+
+A continuación se crea el archivo de configuración del cliente `/etc/wireguard/server.conf` con el siguiente contenido:
+
+```bash title="/etc/wireguard/server.conf" showLineNumbers {9}
+# Config para la PC-Gamer (Peer 1)
+[Interface]
+Address = 10.15.0.2/24
+PrivateKey = GHLPIpBe6I3kjPpCNZkVnvHmZuyQiZxTWJSuKig99Fs= # Clave privada del Peer 1
+DNS = 8.8.8.8
+
+[Peer]
+PublicKey = FeyBRBsRAIzJIXtz01FFbGRy9TgS0rA9aPg3BhWKBi0= # Clave publica del servidor
+Endpoint = <DOMINIO:PUERTO>
+PersistentKeepalive = 25
+AllowedIPs = 10.15.0.0/24, 10.0.0.0/24  # Solo LAN
+#AllowedIPs = 0.0.0.0/0                 # Todo el tráfico por la VPN
+```
+Es importante reemplazar `<DOMINIO:PUERTO>` por la IP pública o dominio del servidor y el puerto configurado (30000 en este caso).
+
+Por otra parte, se tienen dos opciones para el tipo de enrutamiento:
+- **Solo LAN**: Para enrutar solo el tráfico destinado a la red local del servidor, se debe usar la línea `11`.
+- **Todo el tráfico por la VPN**: Para enrutar todo el trafico, se debe usar la línea `12`.
+
+
+<br/>
+{/* TITLE: 3.2 */}
+### Puesta en Marcha
+Para iniciar la interfaz de WireGuard en el cliente, ejecutar el siguiente comando:
+
+```bash
+sudo wg-quick up server
+```
+Si todo es correcto, deberá aparecer la nueva interfaz `server` con la IP `10.15.0.2`.

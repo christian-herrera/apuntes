@@ -4,31 +4,31 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build",
+            "label": "[CH] Build",
             "type": "shell",
             "command": "npm run build",
             "problemMatcher": []
         },
         {
-            "label": "Clear",
+            "label": "[CH] Clear",
             "type": "shell",
             "command": "npm run clear",
             "problemMatcher": []
         },
         {
-            "label": "Start Dev Server",
+            "label": "[CH] Start Dev Server",
             "type": "shell",
             "command": "npm run start",
             "problemMatcher": []
         },
         {
-            "label": "Publish",
+            "label": "[CH] Publish",
             "type": "shell",
             "command": "npm run deploy",
             "problemMatcher": []
         },
         {
-            "label": "Configure (Ubuntu)",
+            "label": "[CH] Configure (Ubuntu)",
             "type": "shell",
             "command": "SSH_AUTH=true && GIT_USER=christian-herrera",
             "problemMatcher": []
