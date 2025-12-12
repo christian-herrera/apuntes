@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkweb_apuntes=globalThis.webpackChunkweb_apuntes||[]).push([[695],{1982:u=>{u.exports=JSON.parse('{"tag":{"label":"Ubuntu","permalink":"/docs/tags/ubuntu","allTagsPath":"/docs/tags","count":1,"items":[{"id":"ubuntu/wireguard","title":"WireGuard","description":"","permalink":"/docs/ubuntu/wireguard"}],"unlisted":false}}')}}]);
