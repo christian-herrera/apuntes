@@ -1,0 +1,74 @@
+---
+sidebar_position: 1
+title: "NameSpace"
+description: "Apuntes sobre los espacios de nombres"
+tags:
+    - C
+    - C++
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+{/* TITLE: 1 */}
+# NameSpace
+
+
+## ¿Qué es un namespace?
+Un namespace es un contenedor de nombres que agrupa:
+
+- Funciones
+- Variables
+- Clases
+- Tipos
+- Constantes
+
+Su objetivo principal es: ***Evitar colisiones de nombres y organizar el código***, no crea objetos, no ocupa memoria por sí mismo, y no es OOP.
+
+Un ejemplo sencillo es el siguiente:
+
+<Tabs>
+    {/* MARK: Pestaña main.cpp */}
+    <TabItem value="main.cpp" label="main.cpp" default>
+        ```cpp
+        #include "sensor.h"
+
+        int main() {
+            Sensor::begin();
+
+            while(1);
+        }
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña sensor.h */}
+    <TabItem value="sensor.h" label="sensor.h" default>
+        ```cpp
+        #pragma once
+
+        namespace Sensor {
+            void begin();
+        }
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña sensor.cpp */}
+    <TabItem value="sensor.cpp" label="sensor.cpp" default>
+        ```cpp
+        #include "sensor.h"
+
+        // Namespace anónimo para variables privadas
+        namespace {
+            bool initialized = false;
+        }
+
+        // Definición de las funciónes públicas
+        namespace Sensor {
+        void Sensor::begin() {
+            // Inicialización del sensor
+            initialized = true;
+        }
+        }
+        ```
+    </TabItem>
+</Tabs>

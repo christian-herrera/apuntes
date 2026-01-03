@@ -106,9 +106,8 @@
 	// ==> TITULOS <== //
 	"Título de sección (H1)": {
 		"scope": "mdx",
-		"prefix": "_title1",
+		"prefix": "_title",
 		"body": [
-			"<br /><br /><br />",
 			"{/* TITLE: ${1:X} */}",
 			"# ${2:Título de la sección}\n$0"
 		],
@@ -118,7 +117,7 @@
 
 	"Título de sección (H2)": {
 		"scope": "mdx",
-		"prefix": "_title2",
+		"prefix": "_title1",
 		"body": [
 			"<hr style={{marginTop: \"40px\"}} />",
 			"{/* TITLE: ${1:X} */}",

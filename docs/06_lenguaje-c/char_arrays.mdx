@@ -1,0 +1,147 @@
+---
+sidebar_position: 2
+title: "Array de Char's"
+description: "Apuntes sobre los arrays de caracteres en C"
+tags:
+    - C
+    - C++
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+{/* TITLE: 1 */}
+# Arrays de Char's
+
+{/* TITLE: 1.1 */}
+## Definición
+Un array de char's es una secuencia contigua de caracteres almacenados en memoria. En C, los arrays de char's se utilizan comúnmente para manejar cadenas de texto.
+Su definición básica es la siguiente:
+
+```c
+char nombre[10];        // Vector con 10 posiciones
+char saludo[] = "Hola"; // Vector con 5 posiciones ('H', 'o', 'l', 'a', '\0')
+```
+Algunas ***reglas de oro*** al trabajar con arrays de char's en C:
+- Nunca escribir fuera del tamaño del array.
+- Siempre dejar lugar para el `'\0'` al definir cadenas.
+- Nunca asumir que el array está vacio.
+
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 1.2 */}
+## Funciones Típicas
+### snprintf()
+La función `snprintf()` se utiliza para formatear cadenas de texto y almacenarlas en un array de char's. Su sintaxis es la siguiente:
+
+<Tabs>
+    {/* MARK: Pestaña Definición */}
+    <TabItem value="Definición" label="Definición" default>
+        ```cpp
+        int snprintf(char* buf, size_t size, const char* fmt, ...);
+        ```
+        Donde aquí se tienen los parámetros:
+        - `buf`: Puntero al array de char's donde se almacenará la cadena formateada.
+        - `size`: Tamaño máximo del buffer. Se puede usar `sizeof(buf)` para obtener el tamaño del array.
+        - `fmt`: Cadena de formato que especifica cómo se deben formatear los datos. Algunos de estos son:
+            - `%d`: Entero decimal.
+            - `%s`: Cadena de caracteres.
+            - `%c`: Carácter.
+            - `%f`: Número de punto flotante.
+
+        Un detalle importante es que la funcion `snprintf()` retorna el número de caracteres que ***hubieran sido escritos*** si el buffer hubiera sido lo suficientemente grande, excluyendo el carácter nulo final. Si el valor retornado es mayor o igual al tamaño del buffer, significa que la cadena fue truncada.
+    </TabItem>
+
+    {/* MARK: Pestaña Ejemplo */}
+    <TabItem value="Ejemplo" label="Ejemplo" default>
+        ```cpp
+        int edad = 25;
+        char buffer[50];
+        snprintf(buffer, sizeof(buffer), "Tengo %d años", edad);
+        ```
+        El array `buffer` contendrá la cadena `"Tengo 25 años"`.
+    </TabItem>
+</Tabs>
+
+
+
+### strcmp y strncmp
+Estas funciones se utilizan para comparar dos arrays de char's (cadenas de texto).
+
+<Tabs>
+    {/* MARK: Pestaña Definiciones */}
+    <TabItem value="Definiciones" label="Definiciones" default>
+        ```cpp
+        int x = strcmp(const char* str1, const char* str2);
+        int x = strncmp(const char* str1, const char* str2, size_t n);
+        ```
+        - `strcmp()`: Compara dos cadenas completas.
+        - `strncmp()`: Compara hasta `n` caracteres de dos cadenas.
+
+        Ambas funciones retornan:
+        - `x` < 0: Si `str1` es menor que `str2`.
+        - `x` = 0: Si `str1` es igual a `str2`.
+        - `x` > 0: Si `str1` es mayor que `str2`.
+
+        En la práctica, solo interesa si el resultado es cero!
+    </TabItem>
+
+    {/* MARK: Pestaña Ejemplo */}
+    <TabItem value="Ejemplo" label="Ejemplo" default>
+        ```cpp title="strcmp()"
+        char cmd[] = "ON";
+        if (strcmp(cmd, "ON") == 0) {
+            // comando ON (Se ejecuta)
+        }
+        if (strcmp(cmd, "OFF") == 0) {
+            // comando OFF (No se ejecuta)
+        }
+        ```
+        ```cpp title="strncmp()"
+        char cmd[] = "#01$SET TEMP 25&";
+        if (strncmp(cmd, "#01$", 4) == 0) {
+            // comando detectado (Se ejecuta)
+        }
+        ```
+    </TabItem>
+</Tabs>
+
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 1.3 */}
+## Uso en Funciones
+Para que una funcion pueda recibir un array de char's como parámetro, se debe definir el parámetro como un puntero a char. Por ejemplo:
+
+```cpp
+void procesarComando(const char* comando) {
+    // Procesar el comando recibido
+}
+```
+
+Esto significa que la función `procesarComando` puede recibir:
+
+- Un array de char's definido previamente (`char cmd[] = "ON";`).
+- Una cadena literal (`"OFF"`).
+
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 1.4 */}
+## Strings en FLASH
+En sistemas embebidos con memoria limitada, como Arduino, es común almacenar cadenas de texto en la memoria FLASH para ahorrar RAM. En C, esto se puede lograr utilizando la macro `F()`.
+
+```cpp
+Serial.println("Hola mundo");    // Esto se copia en RAM al iniciar el programa
+Serial.println(F("Hola mundo")); // Esto se mantiene en FLASH
+```
+El problema es que `F()` devuelve un tipo especial (`__FlashStringHelper*`), por lo que las funciones que reciben cadenas deben estar preparadas para manejar este tipo. Por ejemplo, `Serial.println()` está sobrecargada para aceptar tanto `const char*` como `__FlashStringHelper*`.
+
+Para funciones personalizadas, se puede definir una sobrecarga adicional:
+
+```cpp
+void procesarComando(const __FlashStringHelper* comando) {
+    // Procesar el comando almacenado en FLASH
+}
+```
+Es importante tener en cuenta que las funciones como `strcmp()` no pueden utilizarse directamente con cadenas almacenadas en FLASH. En su lugar, se deben copiar primero a un array de char's en RAM antes de compararlas.
+
+***En la práctica, esto no se hace y se utiliza `F()` solo para imprimir cadenas largas en la consola o en pantallas.***
