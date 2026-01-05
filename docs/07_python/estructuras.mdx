@@ -1,0 +1,292 @@
+---
+sidebar_position: 2
+title: "Estructuras"
+description: "Estructuras del lenguaje de programación Python."
+tags:
+    - Python
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Estructuras
+
+{/* TITLE: 1 */}
+## Estructura del proyecto
+Al igual que en otros lenguajes de programación, en Python es importante mantener una estructura organizada para los proyectos. A continuación, se muestra una estructura básica recomendada para un proyecto en Python:
+
+```
+mi_proyecto/
+├ .venv/                  # Entorno virtual
+├ main.py                 # Archivo de entrada principal
+│   
+├  core/
+│   ├ __init__.py         # Hace que src sea un paquete
+│   ├ module1.py          # Módulo con funciones
+·   ├ module2.py          # Módulo con funciones
+·   ·
+·   ·
+·
+```
+
+De esta forma, cuando se requiere importar funciones que están dentro de los módulos, se utiliza:
+
+<Tabs>
+    {/* MARK: Pestaña main.py */}
+    <TabItem value="main.py" label="main.py" default>
+        ```python
+        from core.module1 import saludar
+        from core.module2 import despedir
+
+        def main():
+            saludar()
+            despedir()
+
+        if __name__ == "__main__":
+            main()
+        ```
+    </TabItem>
+    
+    {/* MARK: Pestaña module1.py */}
+    <TabItem value="modulo1" label="module1.py" >
+        ```python
+        def saludar():
+            print("Hola desde el módulo 1")
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña module2.py */}
+    <TabItem value="modulo2" label="module2.py" >
+        ```python
+        def despedir():
+            print("Adiós desde el módulo 2")
+        ```
+    </TabItem>
+</Tabs>
+
+
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 2 */}
+## Sintaxis
+
+{/* TITLE: 2.1 */}
+### Estructuras de Control
+En Python, la sintaxis es sencilla y fácil de aprender. A continuación, se presentan algunas de las estructuras básicas del lenguaje:
+
+<Tabs>
+    {/* MARK: Pestaña if-elif-else */}
+    <TabItem value="if" label="if-elif-else" default>
+        Recordar que no se utilizan llaves `{}` para definir bloques de código, sino que se usa la indentación (espacios o tabulaciones).
+        ```python
+        x = 10
+
+        if x > 0:
+            print("positivo")
+        elif x == 0:
+            print("cero")
+        else:
+            print("negativo")
+        ```
+        La versión *inline* tiene la estructura:
+        ```python
+        print("positivo") if x > 0 else print("cero") if x == 0 else print("negativo")
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña While */}
+    <TabItem value="while" label="While" >
+        ```python
+        count = 0
+        while True:
+            count += 1
+            if count == 5:
+                break
+            if count >= 3:
+                continue
+            print(count)   # Imprime 1 y 2 (Salta 3 y 4)
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña Match */}
+    <TabItem value="match" label="Match" >
+        `match` es similar a `switch` en otros lenguajes. El valor por defecto se maneja con `_`.
+        ```python
+        valor = 2
+
+        match valor:
+            case 1:
+                print("Uno")
+            case 2:
+                print("Dos")
+            case 3:
+                print("Tres")
+            case _:
+                print("Otro valor")
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña For */}
+    <TabItem value="for" label="For" >
+        En Python, el bucle `for` se utiliza para iterar sobre elementos de una secuencia (como listas, tuplas, diccionarios, conjuntos o cadenas).
+        Recorrer un valor incremental similar a otros lenguajes se hace con la función `range()`.
+        ```python
+        for i in range(5):
+            print(i)
+        ```
+        Otro ejemplo, es recorrer los elementos de una lista:
+        ```python
+        frutas = ["manzana", "banana", "cereza"]
+
+        for fruta in frutas:
+            print(fruta)
+        ```
+    </TabItem>
+</Tabs>
+
+<br/>
+
+{/* TITLE: 2.2 */}
+### Variables y Tipos de Datos
+En Python, no es necesario declarar el tipo de una variable explícitamente. El intérprete asigna el tipo automáticamente según el valor asignado. Algunos tipos de datos comunes en Python son:
+
+<Tabs>
+    {/* MARK: Pestaña None */}
+    <TabItem value="none" label="None" default>
+        Representa la ausencia de valor o un valor nulo.
+        ```python
+        var = None
+        print(var)  # Salida: None
+        ```
+    </TabItem>    
+
+    {/* MARK: Pestaña Bool */}
+    <TabItem value="bool" label="Bool" >
+        Representa valores booleanos: `True` o `False`.
+        ```python
+        es_verdadero = True
+        es_falso = False
+        print(es_verdadero)  # Salida: True
+        print(es_falso)      # Salida: False
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña Int/Float */}
+    <TabItem value="int-float" label="Int/Float" >
+        Representan números enteros y números de punto flotante (decimales).
+        ```python
+        entero = 10
+        flotante = 3.14
+        print(entero)    # Salida: 10
+        print(flotante)  # Salida: 3.14
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña Str */}
+    <TabItem value="str" label="Str" >
+        Representa cadenas de texto.
+        ```python
+        texto = "Hola, Mundo!"
+        print(texto)  # Salida: Hola, Mundo!
+        ```
+        Algunas operaciones útiles con cadenas:
+        ```python
+        # Para usar como condicionales:
+        s.startswith("a")             # Devuelve True si la cadena empieza con "a"
+        s.endswith("z")               # Devuelve True si la cadena termina con "z"
+
+        # Para manipular cadenas:
+        s.lower()                     # Convierte a minúsculas
+        s.upper()                     # Convierte a mayúsculas
+        s.split(",")                  # Divide la cadena en una lista usando "," como separador
+        s.replace("viejo", "nuevo")   # Reemplaza "viejo" por "nuevo"
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña List */}
+    <TabItem value="list" label="List" >
+        Representa una colección ordenada y mutable de elementos.
+        ```python
+        frutas = ["manzana", "banana", "cereza"]
+        lst = [1, 2, 3]
+        ```
+        Estos valores se pueden recorrer con:
+        ```python
+        for fruta in frutas:
+            print(fruta)
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña Tuplas */}
+    <TabItem value="tupla" label="Tuplas" >
+        Representa una colección ordenada e inmutable de elementos.
+        ```python
+        coordenadas = (10.0, 20.0)
+        tupla = (1, 2, 3)
+        ```
+        A diferencia de las listas, las tuplas no pueden modificarse después de su creación.
+    </TabItem>
+
+    {/* MARK: Pestaña Diccionario */}
+    <TabItem value="diccionario" label="Diccionario" >
+        Representa una colección desordenada de pares clave-valor.
+        ```python
+        persona = {
+            "nombre": "Juan",
+            "edad": 30,
+            "ciudad": "Madrid"
+        }
+        ```
+        Para acceder a los valores, se utiliza la clave correspondiente:
+        ```python
+        print(persona["nombre"])  # Salida: Juan
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña Conjuntos */}
+    <TabItem value="conjuntos" label="Conjuntos" >
+        Representa una colección desordenada de elementos únicos.
+        ```python
+        numeros = {1, 2, 3, 4, 5}
+        ```
+        Los conjuntos son útiles para realizar operaciones matemáticas como unión, intersección y diferencia.
+        ```python
+        a = {1, 2, 3}
+        b = {3, 4, 5}
+
+        union = a | b               # {1, 2, 3, 4, 5}
+        interseccion = a & b        # {3}
+        diferencia = a - b          # {1, 2}
+        ```
+    </TabItem>
+</Tabs>
+
+<br />
+
+{/* TITLE: 2.3 */}
+### Valores Falsy y Truthy
+En Python, ciertos valores se consideran "falsy" (evaluados como `False` en un contexto booleano), mientras que otros se consideran "truthy" (evaluados como `True`).
+
+Todos los falores son truthy, excepto los siguientes valores falsy:
+```python
+False
+None
+0
+0.0
+0j
+""
+b""
+bytearray()
+[]
+()
+{}
+set()
+range(0)
+```
+
+***¿Cuando nó utilizar valores falsy o truthy?***
+Cuando importa distinguir:
+
+- `None` vs `0`
+- `""` vs `"0"`
+- Colección vacía vs no inicializada

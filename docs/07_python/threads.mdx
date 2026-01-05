@@ -1,0 +1,328 @@
+---
+sidebar_position: 6
+title: "Threads"
+description: "Paquete threads de Python para manejo de hilos."
+tags:
+    - Python
+    - Threads
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Threads
+{/* TITLE: 1 */}
+## Introducción
+El módulo `threading` en Python proporciona una forma de crear y manejar hilos (threads) en un programa. Los hilos permiten la ejecución concurrente de múltiples tareas dentro de un mismo proceso, lo que puede mejorar el rendimiento en aplicaciones que realizan operaciones de E/S o tareas que pueden ejecutarse en paralelo.
+
+```python
+import threading
+import time
+
+def tarea(nombre, operaciones, retraso):
+    print(f"[{nombre}] Iniciando {operaciones} operaciones rápidas...")
+    for i in range(operaciones):
+        time.sleep(retraso)
+        print(f"[{nombre}] Operación {i+1}/{operaciones}")
+    print(f"[{nombre}] ✓ COMPLETADO")
+
+def main():
+    print("=" * 50 + "\nINICIANDO 2 THREADS EN PARALELO\n" + "=" * 50)
+
+    thread1 = threading.Thread(target=tarea, args=("TAREA-LENTA", 5, 1))
+    thread2 = threading.Thread(target=tarea, args=("TAREA-RAPIDA", 10, 0.3))
+
+    thread1.start()
+    thread2.start()
+
+    print("\n" + "=" * 50 + "\nPROCESO PRINCIPAL\n" + "=" * 50)
+    for i in range(4):
+        time.sleep(1.2)
+        print(f"[MAIN] Proceso principal trabajando... {i+1}/4")
+    
+    # Esperar a que terminen los threads no-daemon
+    thread1.join()
+    thread2.join()
+    
+    print("\n" + "=" * 50)
+
+if __name__ == "__main__":
+    main()
+```
+
+<details>
+<summary>Salida por consola</summary>
+```
+==================================================
+INICIANDO 2 THREADS EN PARALELO
+==================================================
+[TAREA-LENTA] Iniciando 5 operaciones rápidas...
+[TAREA-RAPIDA] Iniciando 10 operaciones rápidas...
+
+==================================================
+PROCESO PRINCIPAL
+==================================================
+[TAREA-RAPIDA] Operación 1/10
+[TAREA-RAPIDA] Operación 2/10
+[TAREA-RAPIDA] Operación 3/10
+[TAREA-LENTA] Operación 1/5
+[MAIN] Proceso principal trabajando... 1/4
+[TAREA-RAPIDA] Operación 4/10
+[TAREA-RAPIDA] Operación 5/10
+[TAREA-RAPIDA] Operación 6/10
+[TAREA-LENTA] Operación 2/5
+[TAREA-RAPIDA] Operación 7/10
+[MAIN] Proceso principal trabajando... 2/4
+[TAREA-RAPIDA] Operación 8/10
+[TAREA-RAPIDA] Operación 9/10
+[TAREA-LENTA] Operación 3/5
+[TAREA-RAPIDA] Operación 10/10
+[TAREA-RAPIDA] ✓ COMPLETADO
+[MAIN] Proceso principal trabajando... 3/4
+[TAREA-LENTA] Operación 4/5
+[MAIN] Proceso principal trabajando... 4/4
+[TAREA-LENTA] Operación 5/5
+[TAREA-LENTA] ✓ COMPLETADO
+
+==================================================
+```
+</details>
+
+En este ejemplo se puede ver que se crean dos hilos que ejecutan la función `tarea` con diferentes parámetros. Mientras los hilos están en ejecución, el proceso principal continúa trabajando de manera independiente. Al final, se espera a que ambos hilos terminen antes de finalizar el programa.
+
+
+
+<br />
+
+{/* TITLE: 2 */}
+## Funciones Típicas
+Para la creación de un hilo se utiliza la siguiente instrucción:
+
+```python
+import threading
+
+t = threading.Thread(target=funcion, args=(arg1, arg2), kwargs={'key': valor})
+```
+
+<Tabs>
+    {/* MARK: Pestaña Clase Fundamental */}
+    <TabItem value="clase" label="Clase Fundamental" default>
+        - `t.start()`: Inicia la ejecución del thread
+        - `t.join(timeout=5)`: Espera a que termine (opcional timeout)
+        - `t.is_alive()`: Devuelve True si el thread aún está ejecutándose
+        - `t.getName()`: Obtiene el nombre del thread (obsoleto en Python 3)
+        - `t.name`: Obtiene o establece el nombre (atributo)
+        - `t.setName("nuevo")`: Establece el nombre (obsoleto)
+        - `t.ident`: ID único del thread (None si no iniciado)
+        - `t.native_id`: ID del thread en el sistema operativo (Python 3.8+)
+        - `t.daemon`: Atributo booleano (True = thread daemon)
+        - `t.isDaemon()`: ¿Es daemon? (obsoleto)
+        - `t.setDaemon(True)`: Establecer como daemon (obsoleto)
+    </TabItem>    
+
+    {/* MARK: Pestaña Funciones del Módulo */}
+    <TabItem value="modulo" label="Funciones del Módulo" default>
+        - `threading.active_count()`: Número de threads activos
+        - `threading.current_thread()`: Devuelve el objeto Thread actual
+        - `threading.main_thread()`: Devuelve el thread principal
+        - `threading.enumerate()`: Lista de todos los objetos Thread activos
+        - `threading.get_ident()`: ID del thread actual (entero)
+        - `threading.get_native_id()`: ID nativo del thread actual (Python 3.8+)
+        - `threading.settrace(func)`: Establece función trace para todos los threads
+        - `threading.setprofile(func)`: Establece función profile para todos los threads
+    </TabItem>
+</Tabs>
+
+
+<br />
+
+{/* TITLE: 3 */}
+## Locks y RLocks
+Los locks (bloqueos) son mecanismos de sincronización que se utilizan para evitar condiciones de carrera cuando múltiples hilos acceden a recursos compartidos. Un `Lock` permite que solo un hilo acceda a un recurso a la vez, mientras que un `RLock` (reentrant lock) permite que el mismo hilo adquiera el bloqueo múltiples veces sin causar un bloqueo.
+
+<details>
+<summary>Ejemplo con Lock</summary>
+```python
+import threading
+import time
+
+# Creamos un Lock (llave única del baño)
+lock_banio = threading.Lock()
+
+def usar_banio(persona):
+    """Intenta usar el baño con Lock"""
+    print(f"[{persona}] Se acerca al baño...")
+    
+    # INTENTA agarrar la llave
+    conseguido = lock_banio.acquire(blocking=False)
+    
+    if conseguido: # No estaba ocupado, entonces usa el baño
+        print(f"  ✅ [{persona}] AGARRÓ LA LLAVE")
+        time.sleep(2)
+        print(f"  ❌ [{persona}] DEVOLVIÓ LA LLAVE")
+        lock_banio.release()
+    else:
+        print(f"  🚫 [{persona}] Baño OCUPADO, se va")
+        time.sleep(0.5)
+        usar_banio(persona)  # <-- INTENTA NUEVAMENTE. OJO: Recursividad!
+
+# Ejecutar
+print("🔒 EJEMPLO LOCK - BAÑO PÚBLICO\n" + "-" * 40)
+
+personas = ["Ana", "Carlos", "Beatriz"]
+threads = []
+
+for persona in personas:
+    t = threading.Thread(target=usar_banio, args=(persona,))
+    threads.append(t)
+    t.start()
+    time.sleep(0.3)  # Llegan con diferencia
+
+for t in threads:  # Espera a que terminen todos
+    t.join()
+```
+Esto, simula un baño público donde solo una persona puede usar el baño a la vez. Si alguien intenta usar el baño mientras está ocupado, esperará y lo intentará de nuevo.
+La salida por consola podría ser algo así:
+```
+🔒 EJEMPLO LOCK - BAÑO PÚBLICO
+----------------------------------------
+[Ana] Se acerca al baño...
+  ✅ [Ana] AGARRÓ LA LLAVE
+[Carlos] Se acerca al baño...
+  🚫 [Carlos] Baño OCUPADO, se va
+[Beatriz] Se acerca al baño...
+  🚫 [Beatriz] Baño OCUPADO, se va
+[Carlos] Se acerca al baño...
+  🚫 [Carlos] Baño OCUPADO, se va
+[Beatriz] Se acerca al baño...
+  🚫 [Beatriz] Baño OCUPADO, se va
+[Carlos] Se acerca al baño...
+  🚫 [Carlos] Baño OCUPADO, se va
+[Beatriz] Se acerca al baño...
+  🚫 [Beatriz] Baño OCUPADO, se va
+[Carlos] Se acerca al baño...
+  🚫 [Carlos] Baño OCUPADO, se va
+  ❌ [Ana] DEVOLVIÓ LA LLAVE
+[Beatriz] Se acerca al baño...
+  ✅ [Beatriz] AGARRÓ LA LLAVE
+[Carlos] Se acerca al baño...
+  🚫 [Carlos] Baño OCUPADO, se va
+[Carlos] Se acerca al baño...
+  🚫 [Carlos] Baño OCUPADO, se va
+[Carlos] Se acerca al baño...
+  🚫 [Carlos] Baño OCUPADO, se va
+[Carlos] Se acerca al baño...
+  🚫 [Carlos] Baño OCUPADO, se va
+  ❌ [Beatriz] DEVOLVIÓ LA LLAVE
+[Carlos] Se acerca al baño...
+  ✅ [Carlos] AGARRÓ LA LLAVE
+  ❌ [Carlos] DEVOLVIÓ LA LLAVE
+```
+Lo cual indica que solamente la persona que usa el baño puede tener la "llave" (lock) en ese momento. Dejando a las demas personas esperando hasta que el baño esté libre.
+</details>
+
+
+<details>
+<summary>Ejemplo con RLock</summary>
+
+**RLock** permite que el mismo hilo pueda adquirir el bloqueo múltiples veces sin causar un bloqueo. Esto es útil en situaciones donde una función que adquiere un bloqueo llama a otra función que también intenta adquirir el mismo bloqueo.
+```python
+import threading
+import time
+
+# RLock: el mismo hilo puede entrar varias veces
+archivo_lock = threading.RLock()
+
+def escribir_archivo():
+    print("  ✍️  Intentando escribir en el archivo...")
+    with archivo_lock:
+        print("  ✅ Escribiendo...")
+        time.sleep(1)
+
+def procesar_archivo():
+    print("📂 Intentando procesar archivo...")
+    with archivo_lock:
+        print("📂 Archivo abierto")
+        escribir_archivo()
+        print("📂 Archivo cerrado")
+
+def trabajador(nombre):
+    print(f"[{nombre}] Inicia trabajo")
+    procesar_archivo()
+    print(f"[{nombre}] Termina trabajo\n")
+
+# Ejecutar
+hilo = threading.Thread(target=trabajador, args=("Hilo-1",))
+hilo.start()
+hilo.join()
+```
+En este ejemplo, se vé que:
+- El hilo "Hilo-1" inicia el trabajo y llama a `procesar_archivo`.
+- Dentro de `procesar_archivo`, se adquiere el `RLock` y luego se llama a `escribir_archivo`, que también intenta adquirir el mismo `RLock`.
+- Gracias a que es un `RLock`, el mismo hilo puede adquirir el bloqueo nuevamente sin bloquearse a sí mismo.
+
+La salida por consola sería:
+```
+[Hilo-1] Inicia trabajo
+📂 Intentando procesar archivo...
+📂 Archivo abierto
+  ✍️  Intentando escribir en el archivo...
+  ✅ Escribiendo...
+📂 Archivo cerrado
+[Hilo-1] Termina trabajo
+```
+</details>
+
+
+<br />
+
+{/* TITLE: 4 */}
+## Semaforos
+Un semaforo es un mecanismo de sincronización que controla el acceso a un recurso compartido mediante el uso de contadores. A diferencia de los locks, que permiten el acceso exclusivo a un recurso, los semáforos permiten que múltiples hilos accedan a un recurso hasta un límite definido.
+
+- Permite que hasta N hilos entren a una sección crítica
+- Cuando se acaban los permisos → los demás esperan
+
+```python
+import threading
+import time
+
+# 2 lugares disponibles
+estacionamiento = threading.Semaphore(2)
+
+def auto(nombre):
+    print(f"🚗 {nombre} quiere entrar")
+    
+    with estacionamiento:
+        print(f"  ✅ {nombre} estacionó, espera 2 segundos...")
+        time.sleep(2)
+        print(f"  🚪 {nombre} sale")
+
+autos = ["Auto 1", "Auto 2", "Auto 3", "Auto 4"]
+hilos = []
+
+for a in autos: # Crear y arrancar un hilo por cada auto
+    t = threading.Thread(target=auto, args=(a,))
+    hilos.append(t)
+    t.start()
+    time.sleep(0.3)
+
+for t in hilos: # Esperar a que todos los hilos terminen
+    t.join()
+``` 
+Esto simula un estacionamiento con solo 2 espacios disponibles. Los autos intentan entrar, y si hay espacio, pueden estacionarse; de lo contrario, esperan hasta que haya un espacio libre.
+La salida por consola podría ser algo así:
+```
+🚗 Auto 1 quiere entrar
+  ✅ Auto 1 estacionó, espera 2 segundos...
+🚗 Auto 2 quiere entrar
+  ✅ Auto 2 estacionó, espera 2 segundos...
+🚗 Auto 3 quiere entrar
+🚗 Auto 4 quiere entrar
+  🚪 Auto 1 sale
+  ✅ Auto 3 estacionó, espera 2 segundos...
+  🚪 Auto 2 sale
+  ✅ Auto 4 estacionó, espera 2 segundos...
+  🚪 Auto 3 sale
+  🚪 Auto 4 sale
+```

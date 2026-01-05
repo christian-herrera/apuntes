@@ -1,0 +1,91 @@
+---
+sidebar_position: 3
+title: "Funciones"
+description: "Funciones del lenguaje de programación Python."
+tags:
+    - Python
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Funciones
+Una función en Python es un bloque de código reutilizable que realiza una tarea específica. Las funciones ayudan a organizar el código, mejorar su legibilidad y facilitar el mantenimiento.
+
+```python
+def sumar(a, b):
+    return a + b
+
+resultado = sumar(3, 5)
+print("La suma es:", resultado)
+```
+
+<br />
+
+{/* TITLE: 1 */}
+## Retorno de Valores
+Se pueden retornar múltiples valores desde una función utilizando tuplas:
+
+```python
+def dividir(a, b):
+    return a // b, a % b
+
+q, r = dividir(10, 3)
+print("Cociente:", q)
+print("Resto:", r)
+```
+
+
+<br />
+
+{/* TITLE: 2 */}
+### Argumentos
+Las funciones pueden aceptar diferentes tipos de argumentos:
+```python
+def mostrar_info(nombre, edad=30, *args, **kwargs):
+    print("Nombre:", nombre)
+    print("Edad:", edad)
+    print("Args adicionales:", args)
+    print("Kwargs adicionales:", kwargs)
+
+mostrar_info()                                                          #1
+mostrar_info("Luis")                                                    #2
+mostrar_info("Maria", 28)                                               #3
+mostrar_info("Carlos", 35, "Estudiante", "Deporte")                     #4
+mostrar_info("Ana", 25, "Estudiante", ciudad="Madrid", pais="España")   #5
+```
+
+Es importante entender como funcionan las diferentes llamadas a la función `mostrar_info`:
+
+<Tabs>
+    {/* MARK: Pestaña #1 */}
+    <TabItem value="1" label="#1" default>
+        Esta llamada provoca un error dado que se requiere el argumento obligatorio `nombre`.
+    </TabItem>    
+
+    {/* MARK: Pestaña #2 */}
+    <TabItem value="2" label="#2" >
+        Esta llamada proporciona solo el argumento obligatorio `nombre`. La edad se completa con su valor por defecto `30`.
+    </TabItem>
+
+    {/* MARK: Pestaña #3 */}
+    <TabItem value="3" label="#3" >
+        Esta llamada proporciona tanto el argumento obligatorio `nombre` como el argumento opcional `edad`.
+    </TabItem>
+
+    {/* MARK: Pestaña #4 */}
+    <TabItem value="4" label="#4" >
+        Esta llamada proporciona el argumento obligatorio `nombre`, el argumento opcional `edad` y argumentos adicionales posicionales.
+
+        `*args` captura los valores `"Estudiante"` y `"Deporte"` como una tupla y se guardan en la variable `args` de la función.
+    </TabItem>
+
+    {/* MARK: Pestaña #5 */}
+    <TabItem value="5" label="#5" >
+        Esta llamada proporciona el argumento obligatorio `nombre`, el argumento opcional `edad`, un argumento adicional posicional y argumentos adicionales con nombre.
+
+        `*args` captura el valor `"Estudiante"` como una tupla y se guarda en la variable `args` de la función.
+
+        `**kwargs` captura los pares clave-valor `ciudad="Madrid"` y `pais="España"` como un diccionario y se guarda en la variable `kwargs` de la función.
+    </TabItem>
+</Tabs>

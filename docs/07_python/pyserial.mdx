@@ -1,0 +1,316 @@
+---
+sidebar_position: 5
+title: "PySerial"
+description: "Paquete de Python para comunicación serial."
+tags:
+    - Python
+    - PySerial
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# PySerial
+## Introducción
+***pyserial*** es la librería estándar de Python para comunicación serie (UART):
+
+- Arduino
+- ESP8266 ESP32
+- STM32
+- USB-Serial (FTDI, CH340, CP210x)
+
+En el lado Arduino, siempre se utiliza `Serial`.
+En Python, siempre se utiliza `serial.Serial`.
+
+Se instala con pip: `pip install pyserial` para luego importar con `import serial`.
+
+<br />
+
+{/* TITLE: 1 */}
+## Ejemplo Básico
+Todo gira alrededor de la clase `serial.serial`, la cual se utiliza para crear un objeto que representa el puerto serie.
+
+```python
+com = serial.Serial(
+    port="/dev/ttyUSB0",
+    baudrate=115200,
+    timeout=1
+)
+
+if com.is_open:
+    print("Puerto abierto correctamente")
+    # ........
+    com.close()
+```
+
+Algunos de los parámetros mas importantes son:
+
+- `port`: Puerto serie
+- `baudrate`: Velocidad (debe coincidir con Arduino)
+- `timeout`: Tiempo máximo de espera en lectura (`None` espera indefinidamente, `0` no espera y `>0` espera esa cantidad de segundos)
+- `bytesize`: 8 por defecto
+- `parity`: serial.PARITY_NONE
+- `stopbits`: 1 por defecto
+
+Es importante notar:
+
+- El puerto se crea y se abre en la misma línea.
+- Se puede verificar si el puerto está abierto con `is_open`.
+- Siempre es buena práctica cerrar el puerto con `close()`.
+
+
+<br />
+
+{/* TITLE: 2 */}
+## Escribir Datos
+Para enviar datos al dispositivo serie, se utiliza el método `write()`, el cual recibe un objeto de tipo bytes.
+
+**`write()` siempre envía bytes, nunca strings...**
+
+```python
+com.write("Hola Mundo")                     # ERROR (porque es str)
+
+# Las siguientes opciones son correctas dado que se convierte de str a bytes
+com.write(b"Hola Mundo")                    # Encoding literal
+com.write("Hola Mundo".encode())            # Encoding por defecto (utf-8)
+com.write("Hola Mundo".encode('ascii'))     # Encoding ASCII
+com.write("Hola Mundo".encode('utf-8'))     # Encoding UTF-8
+```
+Es importante entender las diferencias entre las distintas codificaciones:
+- `ascii`: Solo caracteres del 0 al 127 (Inglés)
+- `utf-8`: Todos los caracteres (Español, Chino, Árabe, Emojis, etc.)
+
+>También es buena práctica agregar un salto de línea al final de cada mensaje, para facilitar la lectura en el lado del dispositivo serie (Arduino, ESP32, etc.)
+
+
+<br />
+
+{/* TITLE: 3 */}
+## Leer Datos
+Para leer datos desde el dispositivo serie, se utilizan los métodos `read()`, `readline()`, `readlines()` o `read_until()`.
+
+>Se puede consultar la cantidad de bytes que hay disponibles para leer en el buffer de entrada con `com.in_waiting`.
+
+<Tabs>
+    {/* MARK: Pestaña read() */}
+    <TabItem value="read" label="read()" default>
+        Devuelve una cantidad específica de bytes. Es bloqueante hasta que se reciben los bytes solicitados o se alcanza el timeout.
+        ```python
+        data = com.read(10)          # Lee hasta 10 bytes.
+        print(data.decode())
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña readline() */}
+    <TabItem value="readline" label="readline()">
+        Funciona similar a `read()`, pero lee hasta encontrar un salto de línea (`\n`). También es bloqueante.
+        ```python
+        data = com.readline()
+        print(data.decode())
+        ```
+        Desde arduino, se puede enviar datos con:
+        ```cpp
+        Serial.println("Hola Mundo");  // Añade \r\n automáticamente
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña readlines() */}
+    <TabItem value="readlines" label="readlines()">
+        Funciona similar a `read()`, pero lee todas las líneas disponibles en el buffer de entrada.
+        ```python
+        data = com.readlines()
+        print(data.decode())
+        ```
+    </TabItem>
+
+    {/* MARK: Pestaña read_until() */}
+    <TabItem value="read_until" label="read_until()">
+        Esta función permite leer datos hasta encontrar un delimitador específico o hasta alcanzar un número máximo de bytes.
+        ```python
+        data = com.read_until(expected=b'FIN')   # Lee hasta encontrar 'FIN'
+        data = com.read_until(expected=b'\r\n')  # Lee hasta encontrar '\r\n'
+        data = com.read_until(expected=b'!')     # Lee hasta encontrar '!'
+        print(data.decode())
+        ```
+        También se puede especificar un número máximo de bytes a leer utilizando el argumento `size`.
+    </TabItem>
+</Tabs>
+
+
+<br />
+
+{/* TITLE: 4 */}
+## Print vs Write (en Arduino)
+### Usando Print
+En Arduino se puede usar:
+```cpp
+uint16_t val1 = 123;
+uint16_t val2 = 456;
+
+Serial.print("#");       // Envía el caracter '#'
+Serial.print(val1);      // Envía "123" (3 caracteres)
+Serial.print(",");       // Envía el caracter ','
+Serial.print(val2);      // Envía "456" (3 caracteres)
+Serial.println("&");     // Envía "&" + "\r\n"
+```
+Esto imprime el string: `#123,456&\r\n` pero el problema de esto es que es un tamaño variable ya que al convertir a ASCII, cada número puede ocupar diferente cantidad de caracteres.
+
+Para recibirlo en Python, se utiliza:
+
+```python
+data = com.readline()          # Lee hasta \n
+print(data.decode())           # Imprime: #123,456&
+```
+
+<br />
+
+### Usando Write
+En Arduino se puede usar:
+```cpp
+typedef struct {
+    uint16_t val1, val2;
+} Data_t;
+Data_t data = {123, 456};
+
+Serial.write('#');                              // Envía byte b'#' (35)'
+Serial.write((uint8_t *)&data, sizeof(Data_t)); // Envía 4 bytes (2 bytes por cada uint16_t)
+Serial.write('&');                              // Envía byte b'&' (38)
+```
+Esto imprime todos los valores pero en formato binario, ocupando siempre el mismo tamaño (6 bytes en total).
+
+Para recibirlo en Python, se utiliza:
+
+```python
+import struct
+
+data = com.read_until(b'&')                                         # Lee hasta encontrar b'&'
+initMark, val1, val2, endMark = struct.unpack('<cHHc', data)        # Desempaqueta los datos
+print(f"Marcas: {initMark} y {endMark}, Valores: {val1}, {val2}")   # Imprime...
+```
+
+<details>
+<summary>Notas sobre `struct`</summary>
+
+El paquete `struct` permite empaquetar y desempaquetar datos binarios en Python.
+El formato está compuesto por caracteres que indican el orden de los bytes, el tipo de dato y su tamaño.
+
+El orden de los bytes puede ser (el indicado para usar con Arduino es *Little-endian*):
+- `@`: Nativo (por defecto)
+- `=`: Nativo (sin alineación)
+- `>`: Big-endian
+- `<`: Little-endian
+- `!`: Network (Big-endian)
+
+El tipo y tamaño se define con:
+- `?`: bool (1 byte)
+- `c`: char (1 byte)
+- `b` y `B`: signed y unsigned char (1 byte)
+- `h` y `H`: signed y unsigned short (2 bytes)
+- `i` y `I`: signed y unsigned int (4 bytes)
+- `l` y `L`: signed y unsigned long (4 bytes)
+- `q` y `Q`: signed y unsigned long long (8 bytes)
+- `f`: float (4 bytes)
+- `d`: double (8 bytes)
+
+</details>
+
+
+<br />
+
+{/* TITLE: 5 */}
+## Checksum
+Para asegurar la integridad de los datos transmitidos, es común utilizar un checksum.
+Un checksum es un valor calculado a partir de los datos que se envían, y se utiliza para verificar que los datos no han sido alterados durante la transmisión.
+
+Suponiendo el siguiente paquete que se envía desde Arduino:
+```cpp
+[#][counter][ch1][ch2][ch3][ch4][checksum][&]
+ └1B   └2B    └2B  └2B  └2B  └2B    └1B   └1B   -> Total: 13 Bytes
+```
+La operación XOR se realiza de la siguiente manera:
+- Recorre desde `counter` hasta `ch4` byte a byte.
+- Por cada byte, realiza una operación XOR con el valor acumulado del checksum.
+- El resultado final es el valor del checksum que se envía.
+
+Esto garantiza las siguientes caracteristicas:
+
+- Cuando se realiza la misma operación XOR en el receptor, si se adiciona la operación XOR con el checksum recibido, debería dar cero. Esto puede simplificar las operaciones.
+- Detecta si un byte se movío de posicion, ya que XOR(A,B,C) != XOR(A,C,B)
+- Cada bit del checksum depende igualmente de todos los bytes.
+- La operación XOR siempre da un resultado de 1 byte (0-255).
+
+Entonces, un Checksum simple para mover un payload desde Arduino a Python podría ser:
+
+<Tabs>
+    {/* MARK: Pestaña Arduino */}
+    <TabItem value="arduino" label="Arduino">
+        Suponiendo que se tiene una estructura:
+        ```cpp
+        typedef struct {
+            uint16_t counter;
+            uint16_t ch1, ch2, ch3, ch4;
+        } Payload_t;
+        Payload_t data;
+        ```
+        Se procede a hacer el envío con checksum de la siguiente forma:
+        ```cpp
+        // Fijo los valores del payload
+        data.counter++;
+        data.ch1 = ...; data.ch2 = ...; data.ch3 = ...; data.ch4 = ...;
+
+        // Calculo el checksum
+        data.checksum = 0;
+        uint8_t *ptr = (uint8_t *)&data;                    // Puntero al inicio del payload
+        for (size_t i = 0; i < sizeof(Payload_t); i++)      // Recorre byte a byte, acumulando el XOR
+            data.checksum ^= *(ptr + i);
+        
+        // Envío los datos por Serial
+        Serial.write('#');                                  // Marca de inicio
+        Serial.write((uint8_t *)&data, sizeof(Payload_t));  // Payload + Checksum
+        Serial.write('&');                                  // Marca de fin
+        ``` 
+        De esta forma, se envía el paquete de forma binaria con el checksum incluido. En total se tienen 13 bytes.
+    </TabItem>   
+
+    {/* MARK: Pestaña Python */}
+    <TabItem value="python" label="Python" default>
+        En Python, la estructura básica para recibir y verificar el paquete con checksum sería:
+        ```python
+        import struct
+        import serial
+
+        # Creo la conexión
+        com = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, timeout=1)
+
+        # Leo el paquete completo hasta encontrar la marca de fin '&'
+        packet = com.read_until(b'&')
+
+        # Si el tamaño del paquete es correcto, lo desempaqueto
+        if len(packet) == 13:
+            _init, counter, ch1, ch2, ch3, ch4, checksum, _end = struct.unpack('<cHHHHHBc', packet)
+            
+            # Verifico las marcas de inicio y fin
+            if _init != b'#' or _end != b'&':
+                print("Error: Marcas de inicio o fin incorrectas")
+                return False
+
+            # Verifico el checksum
+            # Esto se hace recorriendo byte a byte y acumulando el resultado de la operación XOR
+            calc_checksum = 0
+            for byte in packet[1:-1]:
+                calc_checksum ^= byte
+
+            # Dado que incluí el checksum en el cálculo, el resultado debe ser 0
+            if calc_checksum == 0:
+                print(f"Datos:\t{counter}\t{ch1}\t{ch2}\t{ch3}\t{ch4}")
+                return True
+            else:
+                print("Error: Checksum inválido")
+                return False
+        else:
+            print("Error: Tamaño de paquete incorrecto")
+        ```
+        Esto se debería implementar en un bucle para ir leyendo continuamente los datos, de forma que el AVR envíe lo mas rápido posible y que Python los procese a medida que llegan. Tratando de que nunca se alcance a llegar al valor del timeout definido para la comunicacion serial.
+    </TabItem>
+</Tabs>
+

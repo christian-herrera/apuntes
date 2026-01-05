@@ -1,0 +1,49 @@
+---
+sidebar_position: 1
+title: "Introducción"
+description: "Primeras nociones sobre el lenguaje de programación Python."
+tags:
+    - Python
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Introducción
+
+{/* TITLE: 1 */}
+## Entorno Virtual
+En Python, un entorno virtual es una herramienta que ayuda a mantener las dependencias y paquetes de un proyecto aislados de otros proyectos. Esto es especialmente útil cuando se trabaja en múltiples proyectos que pueden requerir diferentes versiones de las mismas bibliotecas.
+
+Para crear el entorno virtual, se utiliza el módulo `venv` que viene incluido con Python:
+```bash
+python -m venv .venv
+```
+
+Luego, se activa el entorno virtual:
+
+<Tabs>
+    {/* MARK: Pestaña Linux */}
+    <TabItem value="Linux" label="Linux" default>
+        ```bash
+        source .venv/bin/activate
+        ```
+    </TabItem>
+    
+    {/* MARK: Pestaña Windows */}
+    <TabItem value="Windows" label="Windows" >
+        ```bash
+        .venv\Scripts\activate
+        ```
+    </TabItem>
+</Tabs>
+
+
+Finalmente, para instalar, congelar, o desinstalar paquetes, se utiliza `pip`:
+```bash
+pip install nombre_paquete       # Instalar paquete
+pip freeze > requirements.txt    # Congelar dependencias
+pip uninstall nombre_paquete     # Desinstalar paquete
+
+pip install -r requirements.txt  # Instalar desde archivo de dependencias
+```

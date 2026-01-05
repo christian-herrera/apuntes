@@ -1,0 +1,110 @@
+---
+sidebar_position: 4
+title: "Clases"
+description: "Clases del lenguaje de programación Python."
+tags:
+    - Python
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Clases
+## Introducción
+En Python, una clase es una plantilla para crear objetos. Las clases encapsulan datos y funcionalidades relacionadas, permitiendo la creación de instancias (objetos) que comparten la misma estructura y comportamiento.
+
+```python
+class Persona:
+    def saludar(self):
+        print("Hola")
+
+p = Persona()
+p.saludar()
+```
+📌 `self` es la instancia actual (como `this` en C++ / Java).
+
+
+<br />
+
+{/* TITLE: 1 */}
+## Clase en Otro Archivo
+Para organizar mejor el código, las clases suelen definirse en archivos separados y luego importarse cuando se necesitan. Suponiendo la estructura planteada en la primer nota [Estructuras](./estructuras):
+
+```
+mi_proyecto/
+├ .venv/                  # Entorno virtual
+├ main.py                 # Archivo de entrada principal
+│   
+├  core/
+│   ├ __init__.py         # Hace que src sea un paquete
+│   ├ module1.py          # Módulo con funciones
+·   ├ module2.py          # Módulo con funciones
+·   ·
+·   ·
+·
+```
+Es importante colocar el archivo `__init__.py` dentro de la carpeta `core/` para que Python lo reconozca como un paquete.
+
+<Tabs>
+    {/* MARK: Pestaña module1.py */}
+    <TabItem value="module1" label="module1.py" default>
+        La estructura básica es la siguiente:
+        ```python
+        class Persona:
+            def __init__(self, nombre, edad):
+                self.nombre = nombre
+                self.edad = edad
+
+            def saludar(self):
+                print(f"Hola, soy {self.nombre} y tengo {self.edad} años")
+        ```
+        Es importante recordar que el argumento `self` en los métodos de la clase hace referencia a la instancia actual de la clase. De esta forma cada método puede acceder a los atributos y otros métodos de la instancia.
+    </TabItem>
+
+    {/* MARK: Pestaña main.py */}
+    <TabItem value="main" label="main.py">
+        En `main.py`, se importa la clase y se crea una instancia de la misma:
+        ```python
+        from core.module1 import Persona
+
+        def main():
+            p = Persona("Ana", 25)
+            p.saludar()
+
+        if __name__ == "__main__":
+            main()
+        ```
+        Aquí tambien es importante ver que el objeto vive dentro de la función `main`, y se accede a sus atributos y métodos utilizando la notación de punto (`p.saludar()`).
+    </TabItem>    
+</Tabs>
+
+
+<br />
+
+{/* TITLE: 2 */} 
+## Variables y Métodos
+Proponiendo el siguiente ejemplo:
+
+```python
+class Contador:
+    total = 0                   # Variable de Clase
+
+    def __init__(self):
+        Contador.total += 1
+
+    def publico(self):          # Método Público
+        pass
+
+    def _interno(self):         # Método Privado
+        pass
+
+c1 = Contador()
+c2 = Contador()
+print("Total:", Contador.total)
+```
+
+- La variable `total` es una variable de clase, compartida por todas las instancias de la clase `Contador`.
+- El método `publico` es un método público, accesible desde fuera de la clase.
+- El método `_interno` es un método privado (convención), que no debería ser accedido desde fuera de la clase. Aunque se puede, por convención se indica que es para uso interno de la clase.
+
+
