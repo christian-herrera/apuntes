@@ -1,0 +1,97 @@
+---
+sidebar_position: 2
+title: "Particiones de Memoria"
+description: "Esquema de particiones de memoria en ESP32 y su configuración para actualizaciones OTA."
+---
+
+# Particiones de Memoria
+{/* TITLE: 1 */}
+## Introducción
+El ESP32 utiliza un esquema de particiones de memoria para organizar el almacenamiento interno del dispositivo. Este esquema es crucial para gestionar el firmware, los datos del usuario y las actualizaciones Over-The-Air (OTA). La definicion de estas particiones las realiza PlatformIO a traves del archivo `partitions.csv`, pero este mismo se puede editar para personalizar el esquema de particiones segun las necesidades del proyecto.
+
+La version por defecto de PlatformIO para ESP32 es `default.csv` y contiene las siguientes particiones:
+
+```csv
+# Name,   Type, SubType, Offset,  Size, Flags
+nvs,      data, nvs,     0x9000,  0x5000,
+otadata,  data, ota,     0xe000,  0x2000,
+app0,     app,  ota_0,   0x10000, 0x140000,
+app1,     app,  ota_1,   0x150000,0x140000,
+spiffs,   data, spiffs,  0x290000,0x160000,
+coredump, data, coredump,0x3F0000,0x10000,
+```
+Es importante entender que el microcontrolador dispone de una memoria flash de 4MB pero la misma es accesible a partir de la posicion `0x9000` ya que las primeras posiciones estan reservadas para el bootloader y otras funciones internas del ESP32.
+
+En este esquema, los siguientes <u>tipos</u> de particiones:
+
+- ***data***: Almacena datos persistentes del sistema y del usuario. Es usado por `WiFi`, `Bluetooth`, `Preferences`, entre otros.
+    - ***nvc***: Almacena la configuracion de red y otros parametros del sistema.**(SIempre debe estar presente)**.
+    - ***ota***: Almacena informacion sobre las particiones OTA, por ejemplo, cual es la particion activa y cual es la siguiente para actualizaciones OTA.
+    - ***spiffs***: Sistema de archivos SPIFFS para almacenar archivos del usuario. Por ejemplo: certificados, configuraciones, logs, etc.
+    - ***coredump***: Almacena volcados de memoria en caso de fallos del sistema.
+    - ***phy_init***: Almacena datos de inicializacion del PHY para WiFi y Bluetooth.
+- ***app***: Almacena las aplicaciones (firmware) que se ejecutan en el dispositivo.
+    - ***ota_0*** y ***ota_1***: Particiones para aplicaciones OTA. Permiten tener dos versiones del firmware para actualizaciones seguras.
+    - ***factory***: Particion para la aplicacion de fabrica. Usada cuando no se utilizan actualizaciones OTA.
+
+En las siguientes secciones, se presentan dos esquemas de particiones recomendados: uno para entornos de desarrollo y otro para entornos de produccion con soporte para actualizaciones OTA. La forma de que PlatformIO utilice un esquema de particiones personalizado es especificando el archivo `partitions.csv` en el archivo `platformio.ini` de la siguiente manera:
+
+```ini
+board_build.partitions = partitions_prod.csv
+; board_build.partitions = partitions_dev.csv
+```
+
+:::warning[Nota importante!]
+
+Recordar que el bootloader requiere que las memorias del tipo `data` y `app` se deben alinear de forma distinta:
+- Las particiones del tipo `data` deben estar alineadas a 0x1000 (4KB).
+- Las particiones del tipo `app` deben estar alineadas a 0x10000 (64KB).
+
+:::
+
+
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 1.1 */}
+## Esquema para Desarrollo
+Para entornos de desarrollo, es recomendable utilizar un esquema de particiones que maximice el espacio disponible para la aplicación y los datos del usuario. A continuacion se muestra un ejemplo de un esquema de particiones optimizado para desarrollo:
+
+```csv
+# Name,     Type, SubType, Offset,  Size
+nvs,        data, nvs,     0x9000,  0x3000
+phy_init,   data, phy,     0xC000,  0x1000
+app0,       app,  ota_0,   0x10000, 0x280000
+spiffs,     data, spiffs,  0x290000,0xA0000
+coredump,   data, coredump,0x330000,0x10000
+```
+En este esquema, se define:
+- `nvs`: 12KB para almacenar configuraciones del sistema.
+- `phy_init`: 4KB para datos de inicializacion del PHY.
+- `app0`: 2.5MB para la aplicacion principal, maximizando el espacio disponible.
+- `spiffs`: 640KB para almacenamiento de archivos del usuario.
+- `coredump`: 64KB para almacenar volcados de memoria en caso de fallos.
+
+No se incluye una segunda particion `app1` para OTA, ya que en un entorno de desarrollo, las actualizaciones OTA no son una prioridad. Esto permite asignar mas espacio a la aplicacion principal y al sistema de archivos SPIFFS.
+
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 1.2 */}
+## Esquema para Producción (con OTA)
+Para entornos de produccion, es esencial contar con un esquema de particiones que soporte actualizaciones OTA para garantizar que el dispositivo pueda recibir mejoras y correcciones de errores despues de su despliegue. Un esquema recomendado para produccion es el siguiente:
+
+```csv
+# Name,   Type, SubType, Offset,  Size
+nvs,      data, nvs,     0x9000,  0x4000
+otadata,  data, ota,     0xD000,  0x2000
+phy_init, data, phy,     0xF000,  0x1000
+app0,     app,  ota_0,   0x10000, 0x1E0000
+app1,     app,  ota_1,   0x1F0000,0x1E0000
+```
+
+Bajo esta estructura, se define:
+- `nvs`: 16KB para almacenar configuraciones del sistema.
+- `otadata`: 8KB para gestionar las particiones OTA.
+- `phy_init`: 4KB para datos de inicializacion del PHY.
+- `app0` y `app1`: 1.875MB cada una para las dos versiones del firmware, permitiendo actualizaciones OTA seguras.
+
+Este esquema garantiza que el dispositivo pueda actualizar su firmware sin interrumpir su funcionamiento, ya que siempre habra una version estable del firmware disponible en caso de que la actualizacion falle.
