@@ -1,0 +1,202 @@
+---
+sidebar_position: 2
+title: "Libreria WiFi.h"
+description: "Funciones esenciales de la librería WiFi.h para ESP32"
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Libreria WiFi.h
+{/* TITLE: 1 */}
+## Introducción
+La librería `WiFi.h` permite configurar el ESP32 en diferentes modos de operación. Además dispone de algunas funciones para obtener detalles de la conexión y gestionar eventos relacionados con la conectividad Wi-Fi.
+
+***Estados y Valores***
+
+- `WiFi.RSSI()`: Devuelve la intensidad de la señal de la red Wi-Fi a la que está conectado el ESP32. El valor se expresa en dBm.
+- `WiFi.macAddress()`: Obtiene la dirección MAC del ESP32.
+- `WiFi.setHostname("MiSensor")`: Establece el nombre del host para el ESP32 en la red.
+- `WiFi.setAutoReconnect(bool)`: Habilita la reconexión automática a la red Wi-Fi en caso de pérdida de conexión.
+
+***Funciones de Gestión de Energía***
+
+- `WiFi.setSleep(bool)`: Habilita o deshabilita el modo de ahorro de energía Wi-Fi.
+- `WiFi.setTxPower(WIFI_POWER_19_5dBm)`: Configura la potencia de transmisión Wi-Fi. Los valores van desde `WIFI_POWER_8dBm` hasta `WIFI_POWER_19_5dBm`.
+
+***Gestion de IP***
+
+- `WiFi.localIP()`: Obtiene la dirección IP del ESP32 cuando está en modo Station.
+- `WiFi.softAPIP()`: Obtiene la dirección IP del ESP32 cuando está en modo Access Point.
+
+***Información de Red y Diagnóstico***
+
+- `WiFi.SSID()`: Devuelve el SSID de la red Wi-Fi a la que está conectado el ESP32.
+- `WiFi.status()`: Devuelve el estado actual de la conexión Wi-Fi. Los posibles valores incluyen `WL_CONNECTED`, `WL_NO_SSID_AVAIL`, `WL_CONNECT_FAILED`, entre otros.
+- `WiFi.BSSIDstr()`: Devuelve la dirección MAC del punto de acceso al que está conectado el ESP32 en formato de cadena.
+- `WiFi.softAPgetStationNum()`: Devuelve el número de dispositivos conectados al ESP32 cuando está en modo Access Point.
+
+
+<br />
+## Modos de Conexión
+<Tabs>
+  {/* MARK: Pestaña Station */}
+  <TabItem value="station" label="Station" default>
+      El modo ***estación*** permite al ESP32 conectarse a una red Wi-Fi existente como un cliente. Esto es útil para dispositivos que necesitan acceder a Internet o comunicarse con otros dispositivos en la misma red.
+      ```cpp
+      #include <Arduino.h>
+      #include <WiFi.h>
+
+      void setup() {
+          Serial.begin(115200);
+          delay(3000);
+
+          WiFi.mode(WIFI_STA);
+          WiFi.begin("SSID", "PASSWORD");
+
+          Serial.println("Conectando a la red Wi-Fi...");
+          while (WiFi.status() != WL_CONNECTED) {
+              delay(10);
+          }
+          Serial.println("Conectado a la red Wi-Fi");
+          Serial.print("Dirección IP: ");
+          Serial.println(WiFi.localIP());
+      }
+
+      void loop() {}
+      ```
+  </TabItem>
+
+
+    {/* MARK: Pestaña Access Point */}
+  <TabItem value="ap" label="Access Point" default>
+      El modo ***AP*** permite al ESP32 crear su propia red Wi-Fi a la que otros dispositivos pueden conectarse. Esto es útil para aplicaciones donde el ESP32 actúa como un punto de acceso independiente.
+      ```cpp
+      #include <Arduino.h>
+      #include <DNSServer.h>
+      #include <WebServer.h>
+      #include <WiFi.h>
+
+      IPAddress local_IP(192, 168, 4, 22);
+      IPAddress gateway(192, 168, 4, 9);
+      IPAddress subnet(255, 255, 255, 0);
+
+      DNSServer dnsServer;
+      WebServer server(80);
+
+      void handleRoot() { server.send(200, "text/html", "<h1>Conectado al ESP32-C3!</h1><p>El DNS Cautivo funciona correctamente.</p>"); }
+      void handle404() { server.send(200, "text/html", "<h1>Portal Cautivo</h1><p>Redirigido automáticamente.</p>"); }
+
+      void setup() {
+          Serial.begin(115200);
+          delay(3000);
+
+          WiFi.mode(WIFI_AP);
+          WiFi.softAPConfig(local_IP, gateway, subnet);
+          WiFi.softAP("TestESP32", "12345678");
+
+          dnsServer.start(53, "*", local_IP);
+          server.on("/", handleRoot);
+          server.onNotFound(handle404);
+
+          server.begin();
+      }
+
+      void loop() {
+          dnsServer.processNextRequest();
+          server.handleClient();
+      }
+      ```
+      Es importante notar que se utiliza un servidor DNS y un servidor web, esto se implementa para crear un portal cautivo que redirige automáticamente a los usuarios conectados al ESP32. El fin es lograr que los dispositivos conectados no rechazen la red Wi-Fi por no tener acceso a Internet.
+  </TabItem>
+
+
+      {/* MARK: Station * AP */}
+  <TabItem value="station_and_ap" label="Station + AP" default>
+      El modo dual permite al ESP32 funcionar simultáneamente como estación y punto de acceso. Esto es útil para aplicaciones que requieren conectividad a una red existente mientras permiten que otros dispositivos se conecten al ESP32.
+      ```cpp
+        #include <Arduino.h>
+        #include <DNSServer.h>
+        #include <WebServer.h>
+        #include <WiFi.h>
+
+        IPAddress local_IP(192, 168, 4, 22);
+        IPAddress gateway(192, 168, 4, 9);
+        IPAddress subnet(255, 255, 255, 0);
+
+        DNSServer dnsServer;
+        WebServer server(80);
+
+        unsigned long startTime;
+
+        const char* host_ssid = "Flia-Herrera";
+        const char* host_pass = "oceano2021";
+
+        const char* ap_ssid = "ESP32-C3-AP";
+        const char* ap_pass = "12345678";
+
+        /**
+        * Web HTML de la página principal
+        * Muestra el estado de la conexión WiFi y el tiempo de actividad del dispositivo.
+        */
+        void handleRoot() {
+            char html[800];
+            unsigned long uptime = millis() / 1000;
+            bool connected = WiFi.status() == WL_CONNECTED;
+
+            snprintf(html, sizeof(html),
+                    "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+                    "<meta name='viewport' content='width=device-width, initial-scale=1'>"
+                    "<style>body{font-family:sans-serif;text-align:center;background:#f4f4f4;margin:0;}"
+                    ".card{background:#fff;padding:20px;border-radius:10px;display:inline-block;margin-top:50px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}"
+                    "hr{border:0;border-top:1px solid #eee;margin:15px 0;}</style></head>"
+                    "<body><div class='card'><h2>ESP32-C3 Status</h2>"
+                    "<p><b>Red:</b> %s</p>"
+                    "<p style='color:%s'><b>Estado:</b> %s</p>"
+                    "<p><b>Señal:</b> %d dBm</p>"
+                    "<hr>"
+                    "<p><b>Uptime:</b> %lu s | <b>Clientes AP:</b> %d</p>"
+                    "</div></body></html>",
+                    host_ssid, connected ? "green" : "red", connected ? "CONECTADO" : "DESCONECTADO", WiFi.RSSI(), uptime, WiFi.softAPgetStationNum());
+
+            server.send(200, "text/html", html);
+        }
+
+        /**
+        * Maneja las solicitudes no encontradas (404)
+        */
+        void handle404() { server.send(200, "text/html", "<h1>Portal Cautivo</h1><p>Redirigido automáticamente.</p>"); }
+
+        void setup() {
+            Serial.begin(115200);
+            delay(3000);
+            startTime = millis();
+
+            // Modo AP + STA
+            WiFi.mode(WIFI_AP_STA);
+
+            // Configura el AP
+            WiFi.softAPConfig(local_IP, gateway, subnet);
+            WiFi.softAP(ap_ssid, ap_pass);
+
+            // Conecta a la red WiFi del hogar
+            WiFi.begin(host_ssid, host_pass);
+
+            // Configura el servidor DNS
+            dnsServer.start(53, "*", local_IP);
+
+            // Configura el servidor web
+            server.on("/", handleRoot);
+            server.onNotFound(handle404);
+            server.begin();
+        }
+
+        void loop() {
+            // Procesa las solicitudes DNS y HTTP
+            dnsServer.processNextRequest();
+            server.handleClient();
+        }
+      ```
+      En este ejemplo, el ESP32 se conecta a una red Wi-Fi existente mientras crea su propia red Wi-Fi a la que otros dispositivos pueden conectarse. Además, se implementa un portal cautivo similar al del modo AP.
+  </TabItem>
+</Tabs>

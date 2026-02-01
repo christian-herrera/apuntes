@@ -1,0 +1,67 @@
+---
+sidebar_position: 1
+title: "Hello World"
+description: "Esquema básico para iniciar un proyecto con ESP32"
+---
+
+
+# ESP32 C3 Super Mini
+{/* TITLE: 1 */}
+## Proyecto Base
+El microcontrolador ESP32 C3 Super Mini es una placa de desarrollo compacta y potente basada en el chip ESP32-C3 de Espressif. Este microcontrolador cuenta con conectividad Wi-Fi y Bluetooth BLE, lo que lo hace ideal para proyectos de Internet de las Cosas (IoT) y aplicaciones embebidas.
+
+El esquema báscico para hacer un blink del led integrado en la placa y además imprimir por consola un mensaje es el siguiente:
+
+```cpp
+#include <Arduino.h>
+
+constexpr uint8_t LED_PIN = 8;
+
+void setup() {
+    Serial.begin(115200);
+    Serial.println("Setup complete");
+
+    pinMode(LED_PIN, OUTPUT);
+}
+
+void loop() {
+    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+
+    Serial.println(millis());
+    delay(1000);
+}
+```
+Para que esto pueda compilarse correctamente, es necesario usar la siguiente configuración en el archivo `platformio.ini`:
+
+```ini
+[env:esp32-c3-devkitm-1]
+platform = espressif32
+board = esp32-c3-devkitm-1
+framework = arduino
+
+build_flags = 
+	-D ARDUINO_USB_MODE=1  ; Modo CDC
+	-D ARDUINO_USB_CDC_ON_BOOT=1 ; Redirige los Serial.print... al USB
+
+; Monitor Serial
+monitor_speed = 115200
+monitor_filters = send_on_enter, time, esp32_exception_decoder, log2file
+```
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 2 */}
+## Librerias Disponibles
+Para este microcontrolador, se pueden utilizar la mayoría de las librerías disponibles para el framework de Arduino. Algunas librerías populares incluyen:
+
+- ***Bloque 1***: Gestión de Hardware y Energía
+  - `ESP.h`: Es nativa del framework de Arduino para ESP32 y proporciona funciones básicas para la gestión del hardware.
+- ***Bloque 2***: Conectividad Inalámbrica (WiFi y BLE)
+  - `WiFi.h`: Permite la conexión a redes Wi-Fi y la gestión de conexiones.
+  - `HTTPClient.h`: Facilita la realización de solicitudes HTTP.
+  - `NimBLE-Arduino.h`: Proporciona funcionalidades para Bluetooth Low Energy (BLE).
+- ***Bloque 3***: Protocolos de Comunicación
+  - `SPI.h`: Permite la comunicación SPI con otros dispositivos.
+  - `Wire.h`: Facilita la comunicación I2C.
+- ***Bloque 4***: Almacenamiento de Datos
+  - `Preferences.h`: La mejor opción para datos pequeños (claves, nombres, valores). Usa la partición NVS.
+  - `LittleFS.h`: Sistema de archivos ligero para almacenamiento en memoria flash.

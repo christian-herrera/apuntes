@@ -1,0 +1,191 @@
+---
+sidebar_position: 3
+title: "Libreria WiFiClientSecure.h"
+description: "Funciones esenciales de la librería WiFiClientSecure.h para ESP32"
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Libreria WiFiClientSecure.h
+{/* TITLE: 1 */}
+## Introducción
+La librería `WiFiClientSecure.h` extiende las funcionalidades de la librería `WiFiClient.h` al proporcionar soporte para conexiones seguras mediante SSL/TLS. Esto es especialmente útil para aplicaciones que requieren comunicación segura con servidores web, como la realización de solicitudes HTTPS.
+
+A continuación se describen algunas de los ejemplos de uso más comunes de la librería.
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 1.1 */}
+### Petición GET
+El siguiente ejemplo muestra como lograr una conexión HTTPS a un servidor y realizar una petición GET utilizando un certificado raíz para validar la conexión.
+
+```cpp
+#include <Arduino.h>
+#include <HTTPClient.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+
+const char* host_ssid = "SSID";
+const char* host_pass = "PASSWORD";
+
+const char SERVER_ROOT_CA[] = R"EOF(
+-----BEGIN CERTIFICATE-----
+MIICnzCCAiWgAwIBAgIQf/MZd5csIkp2FV0TttaF4zAKBggqhkjOPQQDAzBHMQsw
+CQYDVQQGEwJVUzEiMCAGA1UEChMZR29vZ2xlIFRydXN0IFNlcnZpY2VzIExMQzEU
+MBIGA1UEAxMLR1RTIFJvb3QgUjQwHhcNMjMxMjEzMDkwMDAwWhcNMjkwMjIwMTQw
+MDAwWjA7MQswCQYDVQQGEwJVUzEeMBwGA1UEChMVR29vZ2xlIFRydXN0IFNlcnZp
+Y2VzMQwwCgYDVQQDEwNXRTEwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARvzTr+
+Z1dHTCEDhUDCR127WEcPQMFcF4XGGTfn1XzthkubgdnXGhOlCgP4mMTG6J7/EFmP
+LCaY9eYmJbsPAvpWo4H+MIH7MA4GA1UdDwEB/wQEAwIBhjAdBgNVHSUEFjAUBggr
+BgEFBQcDAQYIKwYBBQUHAwIwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU
+kHeSNWfE/6jMqeZ72YB5e8yT+TgwHwYDVR0jBBgwFoAUgEzW63T/STaj1dj8tT7F
+avCUHYwwNAYIKwYBBQUHAQEEKDAmMCQGCCsGAQUFBzAChhhodHRwOi8vaS5wa2ku
+Z29vZy9yNC5jcnQwKwYDVR0fBCQwIjAgoB6gHIYaaHR0cDovL2MucGtpLmdvb2cv
+ci9yNC5jcmwwEwYDVR0gBAwwCjAIBgZngQwBAgEwCgYIKoZIzj0EAwMDaAAwZQIx
+AOcCq1HW90OVznX+0RGU1cxAQXomvtgM8zItPZCuFQ8jSBJSjz5keROv9aYsAm5V
+sQIwJonMaAFi54mrfhfoFNZEfuNMSQ6/bIBiNLiyoX46FohQvKeIoJ99cx7sUkFN
+7uJW
+-----END CERTIFICATE-----
+)EOF";
+
+void setup() {
+    Serial.begin(115200);
+    delay(3000);
+
+    // Modo STA
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(host_ssid, host_pass);
+
+    // Espera hasta conectarse
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+    }
+    Serial.println("\nConectado!");
+}
+
+void loop() {
+    if (WiFi.status() == WL_CONNECTED) {
+        WiFiClientSecure client;           // En el stack, se autolimpia al final del 'if'
+        client.setCACert(SERVER_ROOT_CA);  // Asigna el certificado raíz
+
+        HTTPClient http;
+        http.setTimeout(5000);
+
+        // Inicia la conexión HTTPS
+        if (http.begin(client, "https://jsonplaceholder.typicode.com/todos/1")) {
+            int httpCode = http.GET();  // Realiza la petición GET
+
+            if (httpCode == HTTP_CODE_OK) {
+                Serial.println(http.getString());
+            } else {
+                Serial.printf("Error: %d\n", httpCode);  // Error en la peticion, o por timeout
+            }
+            http.end();
+        }
+    }
+
+    delay(10000);
+}
+```
+
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 1.2 */}
+### Envío POST
+El siguiente ejemplo muestra como enviar un payload con datos en formato JSON a un servidor mediante una petición POST segura.
+
+Es importante notar que el payload se construye utilizando la función `snprintf` para asegurar que los datos se formateen correctamente antes de enviarlos. Además, al no usar `String` se evita el uso innecesario de memoria dinámica, lo cual es crucial en entornos con recursos limitados como el ESP32.
+
+```cpp {56-58}
+#include <Arduino.h>
+#include <HTTPClient.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+
+const char* host_ssid = "Flia-Herrera";
+const char* host_pass = "oceano2021";
+
+char buffer[60];
+
+const char SERVER_ROOT_CA[] = R"EOF(
+-----BEGIN CERTIFICATE-----
+MIICnzCCAiWgAwIBAgIQf/MZd5csIkp2FV0TttaF4zAKBggqhkjOPQQDAzBHMQsw
+CQYDVQQGEwJVUzEiMCAGA1UEChMZR29vZ2xlIFRydXN0IFNlcnZpY2VzIExMQzEU
+MBIGA1UEAxMLR1RTIFJvb3QgUjQwHhcNMjMxMjEzMDkwMDAwWhcNMjkwMjIwMTQw
+MDAwWjA7MQswCQYDVQQGEwJVUzEeMBwGA1UEChMVR29vZ2xlIFRydXN0IFNlcnZp
+Y2VzMQwwCgYDVQQDEwNXRTEwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARvzTr+
+Z1dHTCEDhUDCR127WEcPQMFcF4XGGTfn1XzthkubgdnXGhOlCgP4mMTG6J7/EFmP
+LCaY9eYmJbsPAvpWo4H+MIH7MA4GA1UdDwEB/wQEAwIBhjAdBgNVHSUEFjAUBggr
+BgEFBQcDAQYIKwYBBQUHAwIwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU
+kHeSNWfE/6jMqeZ72YB5e8yT+TgwHwYDVR0jBBgwFoAUgEzW63T/STaj1dj8tT7F
+avCUHYwwNAYIKwYBBQUHAQEEKDAmMCQGCCsGAQUFBzAChhhodHRwOi8vaS5wa2ku
+Z29vZy9yNC5jcnQwKwYDVR0fBCQwIjAgoB6gHIYaaHR0cDovL2MucGtpLmdvb2cv
+ci9yNC5jcmwwEwYDVR0gBAwwCjAIBgZngQwBAgEwCgYIKoZIzj0EAwMDaAAwZQIx
+AOcCq1HW90OVznX+0RGU1cxAQXomvtgM8zItPZCuFQ8jSBJSjz5keROv9aYsAm5V
+sQIwJonMaAFi54mrfhfoFNZEfuNMSQ6/bIBiNLiyoX46FohQvKeIoJ99cx7sUkFN
+7uJW
+-----END CERTIFICATE-----
+)EOF";
+
+void setup() {
+    Serial.begin(115200);
+    delay(3000);
+
+    // Modo STA
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(host_ssid, host_pass);
+
+    // Espera hasta conectarse
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+    }
+    Serial.println("\nConectado!");
+}
+
+void loop() {
+    if (WiFi.status() == WL_CONNECTED) {
+        WiFiClientSecure client;           // En el stack, se autolimpia al final del 'if'
+        client.setCACert(SERVER_ROOT_CA);  // Asigna el certificado raíz
+
+        HTTPClient http;
+        http.setTimeout(5000);
+
+        // Inicia la conexión HTTPS
+        if (http.begin(client, "https://jsonplaceholder.typicode.com/posts")) {
+            // Agrega el payload JSON
+            http.addHeader("Content-Type", "application/json");
+            snprintf(buffer, sizeof(buffer), "{\"temp\": %.2f, \"humidity\": %d}", 24.5, 60);
+
+            int httpCode = http.POST(buffer);  // Realiza la petición POST
+            Serial.printf("HTTPS Code: %d\n", httpCode);
+
+            if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_CREATED) {
+                Serial.println(http.getString());
+            } else {
+                Serial.printf("Error: %d\n", httpCode);  // Error en la peticion, o por timeout
+            }
+            http.end();
+        }
+    }
+
+    delay(10000);
+}
+```
+
+
+
+<hr style={{marginTop: "40px"}} />
+{/* TITLE: 2 */}
+## Mejoras...
+Se puede optimizar el uso de memoria y rendimiento evitando utilizar variables del tipo `String` y en su lugar usar buffers de caracteres (`char arrays`). Esto es especialmente importante en dispositivos con recursos limitados como el ESP32, donde la fragmentación de memoria puede ser un problema.
+
+En lugar de usar `String response = http.getString();`, se puede leer directamente el flujo de datos en un buffer predefinido. Una forma de hacerlo es:
+```cpp
+// Definiendo el buffer de forma global con:
+char buffer[128];
+
+// Luego se usa para leer la respuesta:
+memset(buffer, 0, sizeof(buffer));
+WiFiClient* stream = http.getStreamPtr();
+stream->readBytes(buffer, sizeof(buffer) - 1);
+```
